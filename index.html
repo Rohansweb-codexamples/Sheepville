@@ -2,498 +2,240 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>SheepSafe — The Friendship Adventure</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>SheepSafe - The Friendship Adventure</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#ff9b35}
+body{touch-action:none}
+canvas{display:block}
+
+#loading,#start,#levelComplete,#certificate{
+ position:fixed;inset:0;z-index:1000;
+ display:flex;align-items:center;justify-content:center;
+ background:linear-gradient(135deg,#ffd83d,#ff9635,#ff5d55,#7775ff);
+ padding:20px
 }
 
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#79d9ff;
+.loadingBox,.modal,.certificatePaper{
+ width:min(760px,100%);
+ background:#fffffff5;
+ border:5px solid #111;
+ border-radius:30px;
+ padding:35px;
+ text-align:center;
+ box-shadow:0 12px 0 #111
 }
 
-body{
-  touch-action:none;
-}
-
-canvas{
-  display:block;
-}
-
-#loading{
-  position:fixed;
-  inset:0;
-  z-index:1000;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  background:
-    radial-gradient(circle at 20% 20%,#fff 0 5%,transparent 6%),
-    linear-gradient(135deg,#ffdb45,#ff9f32,#ff664d,#7b74ff);
-  color:#151515;
-  transition:.5s;
-}
-
-#loading h1{
-  font-size:52px;
-  margin:0 0 10px;
-  text-align:center;
-}
-
-#loading p{
-  font-size:18px;
-  font-weight:bold;
-}
+#loading h1{font-size:52px;margin:0}
+#loading p{font-weight:bold}
 
 .loader{
-  width:220px;
-  height:14px;
-  border-radius:20px;
-  background:#ffffff66;
-  overflow:hidden;
-  margin-top:20px;
+ width:280px;height:16px;background:#ddd;
+ border:3px solid #111;border-radius:20px;
+ margin:20px auto;overflow:hidden
+}
+#loadFill{
+ width:0;height:100%;
+ background:linear-gradient(90deg,#ffcf25,#ff7035);
+ transition:.15s
 }
 
-.loader div{
-  width:0%;
-  height:100%;
-  background:#fff;
-  border-radius:20px;
-  transition:.2s;
+#start{z-index:900}
+#start h1{font-size:48px;margin:0 0 5px}
+#start h2{margin:0 0 20px}
+#start p{line-height:1.5;font-size:17px}
+
+.bigButton{
+ border:4px solid #111;
+ border-radius:17px;
+ background:linear-gradient(90deg,#ffd02e,#ff7b36);
+ padding:14px 28px;
+ font-size:18px;
+ font-weight:900;
+ cursor:pointer;
+ box-shadow:0 5px 0 #111;
+ margin:7px
 }
+.bigButton:active{transform:translateY(4px);box-shadow:0 1px 0 #111}
 
 #hud{
-  position:fixed;
-  z-index:20;
-  top:15px;
-  left:15px;
-  display:flex;
-  flex-direction:column;
-  gap:9px;
-  pointer-events:none;
+ position:fixed;left:14px;top:14px;z-index:30;
+ display:flex;flex-direction:column;gap:8px;
+ pointer-events:none
 }
-
 .card{
-  background:#fffffff2;
-  border:3px solid #151515;
-  border-radius:18px;
-  padding:10px 15px;
-  box-shadow:0 5px 0 #151515;
+ background:#fffffff2;
+ border:3px solid #111;
+ border-radius:17px;
+ padding:9px 13px;
+ box-shadow:0 4px 0 #111
 }
-
-#gameTitle{
-  font-size:19px;
-  font-weight:900;
+#title{font-size:19px;font-weight:900}
+#level{font-weight:900}
+#meter{
+ width:220px;height:17px;
+ border:3px solid #111;border-radius:20px;
+ background:#ddd;overflow:hidden
 }
-
-#levelText{
-  font-weight:800;
+#meterFill{
+ width:0;height:100%;
+ background:linear-gradient(90deg,#ffdc29,#ff9132,#ff5252);
+ transition:.35s
 }
-
-#kindness{
-  width:210px;
-  height:17px;
-  border:3px solid #151515;
-  border-radius:20px;
-  overflow:hidden;
-  background:#ddd;
-}
-
-#kindnessFill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#ffd21f,#ff8a25,#ff4e4e);
-  transition:.4s;
-}
+#stars{font-weight:900}
 
 #quest{
-  position:fixed;
-  z-index:20;
-  right:15px;
-  top:15px;
-  width:300px;
-  max-width:calc(100vw - 30px);
-  pointer-events:none;
+ position:fixed;right:14px;top:14px;
+ z-index:30;width:310px;max-width:calc(100vw - 28px)
 }
-
-#quest h3{
-  margin:0 0 5px;
-}
-
-#questText{
-  line-height:1.35;
-}
-
-#stars{
-  font-size:20px;
-  font-weight:900;
-}
+#questTitle{font-size:18px;font-weight:900;margin-bottom:5px}
+#questText{line-height:1.35}
 
 #prompt{
-  position:fixed;
-  z-index:25;
-  left:50%;
-  bottom:32px;
-  transform:translateX(-50%);
-  background:#fff;
-  color:#111;
-  border:3px solid #111;
-  border-radius:16px;
-  padding:12px 22px;
-  font-weight:900;
-  box-shadow:0 5px 0 #111;
-  display:none;
-  pointer-events:none;
+ position:fixed;left:50%;bottom:25px;
+ transform:translateX(-50%);
+ z-index:40;
+ display:none;
+ background:white;border:3px solid #111;
+ border-radius:15px;padding:11px 20px;
+ font-weight:900;box-shadow:0 5px 0 #111
 }
 
 #dialogue{
-  position:fixed;
-  z-index:100;
-  left:50%;
-  bottom:25px;
-  transform:translateX(-50%);
-  width:min(760px,calc(100vw - 30px));
-  background:#fffffffa;
-  border:4px solid #111;
-  border-radius:25px;
-  padding:20px;
-  box-shadow:0 9px 0 #111;
-  display:none;
+ position:fixed;left:50%;bottom:18px;
+ transform:translateX(-50%);
+ z-index:200;width:min(780px,calc(100vw - 24px));
+ max-height:75vh;overflow:auto;
+ display:none;background:#fffffff8;
+ border:4px solid #111;border-radius:25px;
+ padding:18px;box-shadow:0 8px 0 #111
 }
 
-#dialogueTop{
-  display:flex;
-  gap:15px;
-  align-items:center;
+.dialogueHeader{display:flex;gap:13px;align-items:center}
+#npcCircle{
+ width:68px;height:68px;flex:none;
+ border-radius:50%;border:3px solid #111;
+ background:#eee;display:flex;
+ align-items:center;justify-content:center;
+ font-weight:900;font-size:24px
 }
-
-#npcFace{
-  width:70px;
-  height:70px;
-  flex:none;
-  border:3px solid #111;
-  border-radius:50%;
-  background:#ddd;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:36px;
-}
-
-#npcName{
-  font-size:23px;
-  font-weight:900;
-}
-
-#npcProblem{
-  margin-top:5px;
-  font-size:16px;
-  line-height:1.35;
-}
+#npcName{font-size:23px;font-weight:900}
+#npcProblem{margin-top:4px;line-height:1.35}
 
 #answers{
-  display:grid;
-  gap:9px;
-  margin-top:15px;
+ display:grid;gap:8px;margin-top:15px
 }
-
 .answer{
-  border:3px solid #111;
-  background:#fff;
-  border-radius:14px;
-  padding:12px;
-  text-align:left;
-  font-size:15px;
-  font-weight:800;
-  cursor:pointer;
-  transition:.15s;
+ border:3px solid #111;
+ background:white;border-radius:13px;
+ padding:11px;text-align:left;
+ font-size:15px;font-weight:800;
+ cursor:pointer
 }
-
-.answer:hover{
-  transform:translateY(-2px);
-  background:#fff1a7;
-}
-
-.answer.selected{
-  background:#ffce3b;
-  transform:scale(1.01);
-}
+.answer:hover,.answer.selected{background:#ffd53d}
+.answer:active{transform:scale(.99)}
 
 #send{
-  width:100%;
-  margin-top:13px;
-  padding:13px;
-  border:3px solid #111;
-  border-radius:15px;
-  background:linear-gradient(90deg,#ffcf31,#ff8734);
-  font-weight:900;
-  font-size:17px;
-  cursor:pointer;
+ width:100%;margin-top:12px;
+ padding:13px;border:3px solid #111;
+ border-radius:14px;background:#61d3ff;
+ font-size:17px;font-weight:900;
+ cursor:pointer
 }
-
-#send:disabled{
-  opacity:.45;
-}
+#send:disabled{opacity:.45}
 
 #feedback{
-  margin-top:12px;
-  padding:12px;
-  border-radius:14px;
-  display:none;
-  font-weight:800;
-  line-height:1.35;
+ display:none;margin-top:10px;
+ padding:11px;border-radius:12px;
+ font-weight:800;line-height:1.4
+}
+.good{background:#c7ffd3;border:3px solid #26884a}
+.bad{background:#ffd0d0;border:3px solid #b33}
+
+#next{
+ display:none;width:100%;margin-top:10px;
+ padding:13px;border:3px solid #111;
+ border-radius:14px;background:#ffb936;
+ font-size:17px;font-weight:900;
+ cursor:pointer
 }
 
-#feedback.good{
-  background:#c8ffd6;
-  border:3px solid #218b45;
-}
+#levelComplete{display:none;z-index:500}
+#levelComplete h1{font-size:40px;margin:0}
+#levelComplete h2{margin:10px}
 
-#feedback.bad{
-  background:#ffd0d0;
-  border:3px solid #b33;
-}
-
-#nextBtn{
-  display:none;
-  margin-top:10px;
-  width:100%;
-  padding:12px;
-  border:3px solid #111;
-  border-radius:14px;
-  background:#72d8ff;
-  font-weight:900;
-  cursor:pointer;
-}
-
-#startScreen,
-#levelComplete,
-#certificate{
-  position:fixed;
-  inset:0;
-  z-index:500;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
-  background:linear-gradient(135deg,#ffdd4a,#ff9a35,#ff655c,#7777ff);
-}
-
-.modal{
-  width:min(700px,100%);
-  max-height:90vh;
-  overflow:auto;
-  background:#fffffff4;
-  border:5px solid #111;
-  border-radius:30px;
-  padding:35px;
-  box-shadow:0 12px 0 #111;
-  text-align:center;
-}
-
-.modal h1{
-  margin:0 0 8px;
-  font-size:42px;
-}
-
-.modal h2{
-  font-size:30px;
-}
-
-.modal p{
-  font-size:17px;
-  line-height:1.5;
-}
-
-.bigButton{
-  border:4px solid #111;
-  border-radius:18px;
-  padding:15px 30px;
-  background:linear-gradient(90deg,#ffcc2e,#ff8535);
-  font-size:19px;
-  font-weight:900;
-  cursor:pointer;
-  box-shadow:0 5px 0 #111;
-  margin:8px;
-}
-
-#certificate{
-  display:none;
-}
-
+#certificate{display:none;z-index:1000}
 .certificatePaper{
-  width:min(850px,100%);
-  background:#fff;
-  border:10px double #222;
-  padding:45px;
-  text-align:center;
-  box-shadow:0 15px 0 #111;
-  max-height:90vh;
-  overflow:auto;
+ max-height:92vh;overflow:auto;
+ border:10px double #222;
+ background:#fff;
 }
-
 .certificatePaper h1{
-  font-family:Georgia,serif;
-  font-size:48px;
-  margin:0;
+ font-family:Georgia,serif;
+ font-size:44px;margin:0
+}
+.certificatePaper h2{font-size:31px}
+.certLine{height:3px;background:#111;margin:20px 0}
+#certName{
+ font-size:30px;font-weight:900;
+ margin:18px
+}
+.nameInput{
+ width:min(500px,100%);
+ padding:12px;
+ border:3px solid #111;
+ border-radius:12px;
+ font-size:17px;
+ font-weight:bold
 }
 
-.certificatePaper h2{
-  font-size:34px;
-  margin:15px 0;
+#mobile{
+ position:fixed;inset:0;z-index:50;
+ pointer-events:none
 }
-
-.certificatePaper .line{
-  height:3px;
-  background:#111;
-  margin:20px 0;
-}
-
-#certificateName{
-  font-size:28px;
-  font-weight:900;
-  margin:20px;
-}
-
-#mobileControls{
-  position:fixed;
-  z-index:30;
-  inset:0;
-  pointer-events:none;
-}
-
 #joystick{
-  position:absolute;
-  left:20px;
-  bottom:20px;
-  width:145px;
-  height:145px;
-  border:4px solid #ffffffaa;
-  background:#1114;
-  border-radius:50%;
-  pointer-events:auto;
+ position:absolute;left:18px;bottom:18px;
+ width:140px;height:140px;
+ border:4px solid #ffffffaa;
+ background:#1115;border-radius:50%;
+ pointer-events:auto
 }
-
 #stick{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:60px;
-  height:60px;
-  transform:translate(-50%,-50%);
-  background:#ffffffbb;
-  border:3px solid #111;
-  border-radius:50%;
+ position:absolute;left:50%;top:50%;
+ width:58px;height:58px;
+ transform:translate(-50%,-50%);
+ background:#ffffffcc;border:3px solid #111;
+ border-radius:50%
 }
-
-.mobileBtn{
-  position:absolute;
-  width:70px;
-  height:70px;
-  border-radius:50%;
-  border:4px solid #111;
-  background:#ffffffdd;
-  font-weight:900;
-  pointer-events:auto;
-  box-shadow:0 4px 0 #111;
+.mobileButton{
+ position:absolute;
+ width:72px;height:72px;
+ border-radius:50%;
+ border:4px solid #111;
+ background:#ffffffdd;
+ font-weight:900;
+ box-shadow:0 4px 0 #111;
+ pointer-events:auto
 }
-
-#jumpBtn{
-  right:28px;
-  bottom:35px;
-}
-
-#talkBtn{
-  right:110px;
-  bottom:110px;
-}
-
-#lookInfo{
-  position:absolute;
-  right:15px;
-  bottom:15px;
-  background:#ffffffcc;
-  border:2px solid #111;
-  padding:7px 10px;
-  border-radius:10px;
-  font-size:12px;
-  font-weight:bold;
-}
-
-.hidden{
-  display:none!important;
-}
+#jump{right:22px;bottom:25px}
+#talk{right:105px;bottom:105px}
 
 @media(max-width:700px){
-  #quest{
-    top:120px;
-    right:10px;
-    width:245px;
-  }
-
-  #hud{
-    top:10px;
-    left:10px;
-  }
-
-  .card{
-    padding:7px 10px;
-  }
-
-  #gameTitle{
-    font-size:15px;
-  }
-
-  #kindness{
-    width:150px;
-  }
-
-  #dialogue{
-    bottom:10px;
-    padding:13px;
-    max-height:62vh;
-    overflow:auto;
-  }
-
-  #npcFace{
-    width:52px;
-    height:52px;
-    font-size:27px;
-  }
-
-  #npcName{
-    font-size:18px;
-  }
-
-  .answer{
-    padding:9px;
-    font-size:13px;
-  }
-
-  .modal{
-    padding:22px;
-  }
-
-  .modal h1{
-    font-size:31px;
-  }
-
-  .certificatePaper{
-    padding:22px;
-  }
-
-  .certificatePaper h1{
-    font-size:35px;
-  }
+ #hud{top:8px;left:8px}
+ .card{padding:6px 9px}
+ #title{font-size:15px}
+ #meter{width:155px;height:15px}
+ #quest{top:100px;right:8px;width:245px}
+ #dialogue{bottom:8px;padding:12px;max-height:67vh}
+ #npcCircle{width:52px;height:52px;font-size:19px}
+ #npcName{font-size:19px}
+ .answer{font-size:13px;padding:9px}
+ .modal{padding:22px}
+ #start h1{font-size:35px}
+ .certificatePaper{padding:20px}
+ .certificatePaper h1{font-size:34px}
 }
 </style>
 </head>
@@ -501,113 +243,130 @@ canvas{
 <body>
 
 <div id="loading">
+ <div class="loadingBox">
   <h1>SheepSafe</h1>
-  <p>Loading the friendship adventure...</p>
-  <div class="loader"><div id="loadBar"></div></div>
+  <p>Preparing your adventure...</p>
+  <div class="loader"><div id="loadFill"></div></div>
+ </div>
 </div>
 
-<div id="startScreen">
-  <div class="modal">
-    <h1>SheepSafe</h1>
-    <h2>The Friendship Adventure</h2>
-    <p>
-      Explore a colourful 3D world, meet sheep who are having difficult
-      online experiences and learn how to respond safely and kindly.
-    </p>
-    <p>
-      <b>WASD / Arrow Keys</b> — Move<br>
-      <b>Space</b> — Jump<br>
-      <b>E</b> — Talk<br>
-      <b>Mouse drag</b> — Look around
-    </p>
-    <button class="bigButton" id="startBtn">START ADVENTURE</button>
-  </div>
+<div id="start">
+ <div class="modal">
+  <h1>SheepSafe</h1>
+  <h2>The Friendship Adventure</h2>
+  <p>
+   Explore the 3D world, meet sheep, complete challenges
+   and learn how to handle difficult online situations.
+  </p>
+  <p>
+   <b>WASD / Arrow Keys</b> — Move<br>
+   <b>Space</b> — Jump<br>
+   <b>E</b> — Talk<br>
+   <b>Drag</b> — Look around
+  </p>
+  <button class="bigButton" id="startButton">START ADVENTURE</button>
+ </div>
 </div>
 
 <div id="hud">
-  <div class="card" id="gameTitle">SheepSafe</div>
-  <div class="card" id="levelText">Level 1</div>
-  <div class="card">
-    <div>Friendship Meter</div>
-    <div id="kindness"><div id="kindnessFill"></div></div>
-  </div>
-  <div class="card" id="stars">Stars: 0</div>
+ <div class="card" id="title">SheepSafe</div>
+ <div class="card" id="level">Level 1 / 8</div>
+ <div class="card">
+  Friendship Meter
+  <div id="meter"><div id="meterFill"></div></div>
+ </div>
+ <div class="card" id="stars">Stars: 0</div>
 </div>
 
 <div id="quest" class="card">
-  <h3>Current Mission</h3>
-  <div id="questText">Find the first sheep.</div>
+ <div id="questTitle">Mission</div>
+ <div id="questText">Find the first sheep.</div>
 </div>
 
 <div id="prompt">Press E to talk</div>
 
 <div id="dialogue">
-  <div id="dialogueTop">
-    <div id="npcFace">S</div>
-    <div>
-      <div id="npcName">Sheep</div>
-      <div id="npcProblem"></div>
-    </div>
+
+ <div class="dialogueHeader">
+  <div id="npcCircle">S</div>
+  <div>
+   <div id="npcName">Sheep</div>
+   <div id="npcProblem"></div>
   </div>
+ </div>
 
-  <div id="answers"></div>
+ <div id="answers"></div>
 
-  <button id="send" disabled>SEND RESPONSE</button>
+ <button id="send" disabled>SEND RESPONSE</button>
 
-  <div id="feedback"></div>
-  <button id="nextBtn">CONTINUE</button>
+ <div id="feedback"></div>
+
+ <button id="next">NEXT LEVEL</button>
+
 </div>
 
 <div id="levelComplete">
-  <div class="modal">
-    <h1 id="completeTitle">Level Complete!</h1>
-    <h2 id="completeStars">Star earned!</h2>
-    <p id="completeText"></p>
-    <button class="bigButton" id="continueLevel">NEXT LEVEL</button>
-  </div>
+ <div class="modal">
+  <h1 id="completeHeading">Level Complete!</h1>
+  <h2 id="completeStars">Star earned</h2>
+  <p id="completeMessage"></p>
+  <button class="bigButton" id="continueButton">CONTINUE</button>
+ </div>
 </div>
 
 <div id="certificate">
-  <div class="certificatePaper">
-    <h1>ROHANS WEB</h1>
-    <div class="line"></div>
-    <h2>Certificate of Digital Friendship</h2>
+ <div class="certificatePaper">
 
-    <p>This certificate is proudly presented to</p>
+  <h1>ROHANS WEB</h1>
 
-    <div id="certificateName">SheepSafe Player</div>
+  <div class="certLine"></div>
 
-    <p>
-      for completing the SheepSafe Friendship Adventure
-      and learning about respectful, supportive and safe
-      behaviour online.
-    </p>
+  <h2>Certificate of Digital Friendship</h2>
 
-    <div class="line"></div>
+  <p>This certificate is presented to</p>
 
-    <p><b>Levels completed:</b> <span id="certLevels">0</span></p>
-    <p><b>Stars collected:</b> <span id="certStars">0</span></p>
-    <p><b>Kindness points:</b> <span id="certPoints">0</span></p>
+  <input
+   class="nameInput"
+   id="nameInput"
+   placeholder="Enter your name"
+  >
 
-    <p style="margin-top:30px">
-      Created for the SheepSafe adventure<br>
-      <b>Rohans Web</b>
-    </p>
+  <div id="certName">SheepSafe Player</div>
 
-    <button class="bigButton" onclick="window.print()">PRINT CERTIFICATE</button>
-    <button class="bigButton" id="restartBtn">PLAY AGAIN</button>
-  </div>
+  <p>
+   for completing the complete SheepSafe adventure
+   and learning about respectful, supportive and safe
+   behaviour online.
+  </p>
+
+  <div class="certLine"></div>
+
+  <p><b>Levels completed:</b> <span id="certLevels">8</span></p>
+  <p><b>Stars:</b> <span id="certStars">0</span></p>
+  <p><b>Kindness points:</b> <span id="certPoints">0</span></p>
+
+  <p style="margin-top:25px">
+   <b>Rohans Web</b><br>
+   SheepSafe Friendship Adventure
+  </p>
+
+  <button class="bigButton" id="printCertificate">
+   PRINT CERTIFICATE
+  </button>
+
+  <button class="bigButton" id="playAgain">
+   PLAY AGAIN
+  </button>
+
+ </div>
 </div>
 
-<div id="mobileControls">
-  <div id="joystick">
-    <div id="stick"></div>
-  </div>
-
-  <button class="mobileBtn" id="jumpBtn">JUMP</button>
-  <button class="mobileBtn" id="talkBtn">TALK</button>
-
-  <div id="lookInfo">Drag the world to look</div>
+<div id="mobile">
+ <div id="joystick">
+  <div id="stick"></div>
+ </div>
+ <button class="mobileButton" id="jump">JUMP</button>
+ <button class="mobileButton" id="talk">TALK</button>
 </div>
 
 <script type="module">
@@ -615,156 +374,279 @@ canvas{
 import * as THREE from
 "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
 
-/* =========================================================
-   BASIC SETUP
-========================================================= */
+/* =====================================================
+   GAME DATA
+===================================================== */
+
+const levels = [
+
+ {
+  title:"The Hurtful Comment",
+  mission:"Find Milly and help her deal with a hurtful online comment.",
+  name:"Milly",
+  x:-17,z:-10,
+  problem:"Someone posted a really hurtful comment about my wool. It made me feel awful.",
+  answers:[
+   ["Tell me who it was and I'll post something even meaner.",false,
+    "A mean reply can make the situation worse."],
+   ["Save the evidence, report the comment and talk to someone you trust.",true,
+    "Excellent. Saving evidence, reporting harmful content and getting support are useful steps."],
+   ["Ignore everything and pretend it never happened.",false,
+    "Sometimes ignoring harmful content isn't enough. Support and reporting can help."]
+  ]
+ },
+
+ {
+  title:"The Group Chat",
+  mission:"Find Pip and help with nasty group-chat messages.",
+  name:"Pip",
+  x:22,z:-10,
+  problem:"A group chat keeps sending me nasty messages. I don't know what to do.",
+  answers:[
+   ["Stay there and argue with everyone.",false,
+    "Arguments can make the situation escalate."],
+   ["Block the people sending abuse, keep evidence and tell a trusted person.",true,
+    "Good choice. Blocking, saving evidence and getting support are useful actions."],
+   ["Send their private messages to everyone.",false,
+    "Sharing private messages can create another problem."]
+  ]
+ },
+
+ {
+  title:"The Shared Picture",
+  mission:"Find Cloud and help after a picture was shared without permission.",
+  name:"Cloud",
+  x:-24,z:25,
+  problem:"Someone shared a picture of me without asking. I feel embarrassed.",
+  answers:[
+   ["Share it again so everyone can see it.",false,
+    "Sharing it further spreads the problem."],
+   ["Ask for it to be removed, report it if necessary and get help.",true,
+    "Excellent. Asking for removal, reporting and getting help can protect Cloud."],
+   ["Tell Cloud it doesn't matter.",false,
+    "Cloud deserves to be listened to and supported."]
+  ]
+ },
+
+ {
+  title:"Left Out",
+  mission:"Find Daisy and help someone who is being deliberately excluded.",
+  name:"Daisy",
+  x:28,z:23,
+  problem:"I saw another sheep being deliberately left out of an online group.",
+  answers:[
+   ["Laugh along so nobody targets you.",false,
+    "Joining in can make the excluded sheep feel even worse."],
+   ["Include them, check how they are feeling and get help if needed.",true,
+    "Wonderful. Inclusion and support can help someone feel welcome."],
+   ["Make another group just to talk about them.",false,
+    "That would continue the exclusion."]
+  ]
+ },
+
+ {
+  title:"The Angry Reply",
+  mission:"Find Baailey and help stop an argument from escalating.",
+  name:"Baailey",
+  x:0,z:-38,
+  problem:"My friend wants to send a really mean reply to someone who upset them.",
+  answers:[
+   ["Tell them to send it immediately.",false,
+    "Sending something while angry can make things worse."],
+   ["Suggest taking a pause and getting support before replying.",true,
+    "Great. Taking a pause can prevent an angry response from escalating."],
+   ["Help write an even harsher message.",false,
+    "Adding more hurtful words increases the conflict."]
+  ]
+ },
+
+ {
+  title:"The Fake Account",
+  mission:"Find Ruby and help after someone pretended to be her online.",
+  name:"Ruby",
+  x:-38,z:-35,
+  problem:"Someone made an account pretending to be me. People think it is really mine.",
+  answers:[
+   ["Make a fake account pretending to be them.",false,
+    "Another fake account creates more confusion."],
+   ["Keep screenshots, report the account and tell a trusted person.",true,
+    "Correct. Evidence and reporting can help deal with impersonation."],
+   ["Give the account your password to prove who you are.",false,
+    "Never give your password to someone online to prove your identity."]
+  ]
+ },
+
+ {
+  title:"The Secret Password",
+  mission:"Find Sunny and help keep an account secure.",
+  name:"Sunny",
+  x:38,z:-37,
+  problem:"Someone online says they need my password so they can fix my account.",
+  answers:[
+   ["Give them your password.",false,
+    "Passwords should stay private."],
+   ["Don't share it and use official support or ask a trusted person.",true,
+    "Exactly. Keep passwords private and use trusted support."],
+   ["Post the password so everyone can help.",false,
+    "Passwords should never be posted publicly."]
+  ]
+ },
+
+ {
+  title:"The Rumour",
+  mission:"Find Poppy and help stop an online rumour.",
+  name:"Poppy",
+  x:40,z:30,
+  problem:"A rumour about me is spreading online and people keep reposting it.",
+  answers:[
+   ["Repost it to see how far it goes.",false,
+    "Reposting spreads the rumour further."],
+   ["Don't spread it, report harmful posts and support Poppy.",true,
+    "Great choice. Don't amplify rumours and make sure Poppy has support."],
+   ["Make up another rumour about the person who started it.",false,
+    "Creating another rumour continues the cycle."]
+  ]
+ }
+
+];
+
+/* =====================================================
+   THREE.JS
+===================================================== */
 
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0xffb23e);
+scene.background =
+ new THREE.Color(0xffad43);
 
-scene.fog = new THREE.Fog(
-  0xffb23e,
-  35,
-  150
-);
+scene.fog =
+ new THREE.Fog(0xffad43,35,155);
 
-const camera = new THREE.PerspectiveCamera(
+const camera =
+ new THREE.PerspectiveCamera(
   65,
-  innerWidth / innerHeight,
+  innerWidth/innerHeight,
   .1,
   400
+ );
+
+camera.position.set(0,6,15);
+
+const renderer =
+ new THREE.WebGLRenderer({
+  antialias:true
+ });
+
+renderer.setSize(
+ innerWidth,
+ innerHeight
 );
 
-camera.position.set(0,7,13);
+renderer.setPixelRatio(
+ Math.min(devicePixelRatio,2)
+);
 
-const renderer = new THREE.WebGLRenderer({
-  antialias:true
-});
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=
+ THREE.PCFSoftShadowMap;
 
-renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.outputColorSpace=
+ THREE.SRGBColorSpace;
 
 document.body.appendChild(renderer.domElement);
 
-/* =========================================================
+/* =====================================================
    AUDIO
-========================================================= */
+===================================================== */
 
-let audioCtx = null;
+let audio=null;
 
-function startAudio(){
+function initAudio(){
 
-  if(!audioCtx){
+ if(!audio){
+  audio=new(
+   window.AudioContext||
+   window.webkitAudioContext
+  )();
+ }
 
-    audioCtx =
-      new (window.AudioContext ||
-      window.webkitAudioContext)();
-
-  }
-
-  if(audioCtx.state === "suspended"){
-    audioCtx.resume();
-  }
+ if(audio.state==="suspended"){
+  audio.resume();
+ }
 }
 
-function sound(
-  frequency=500,
-  duration=.12,
-  type="sine",
-  volume=.06
-){
+function beep(freq,duration=.12,type="sine",volume=.05){
 
-  if(!audioCtx) return;
+ if(!audio)return;
 
-  const osc =
-    audioCtx.createOscillator();
+ const osc=audio.createOscillator();
+ const gain=audio.createGain();
 
-  const gain =
-    audioCtx.createGain();
+ osc.type=type;
+ osc.frequency.value=freq;
 
-  osc.type=type;
-  osc.frequency.value=frequency;
+ gain.gain.setValueAtTime(
+  volume,
+  audio.currentTime
+ );
 
-  gain.gain.setValueAtTime(
-    volume,
-    audioCtx.currentTime
-  );
+ gain.gain.exponentialRampToValueAtTime(
+  .001,
+  audio.currentTime+duration
+ );
 
-  gain.gain.exponentialRampToValueAtTime(
-    .001,
-    audioCtx.currentTime+duration
-  );
+ osc.connect(gain);
+ gain.connect(audio.destination);
 
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  osc.start();
-  osc.stop(audioCtx.currentTime+duration);
+ osc.start();
+ osc.stop(
+  audio.currentTime+duration
+ );
 }
 
 function jumpSound(){
-  sound(420,.08,"sine",.07);
-  setTimeout(()=>sound(650,.1,"sine",.05),60);
+ beep(400,.08);
+ setTimeout(()=>beep(650,.1),70);
 }
 
-function successSound(){
-
-  sound(523,.12,"sine",.07);
-
-  setTimeout(
-    ()=>sound(659,.12,"sine",.07),
-    100
-  );
-
-  setTimeout(
-    ()=>sound(784,.22,"sine",.08),
-    200
-  );
+function talkSound(){
+ beep(520,.07,"triangle",.04);
 }
 
 function badSound(){
-  sound(180,.22,"sawtooth",.035);
+ beep(170,.2,"sawtooth",.035);
 }
 
-function collectSound(){
-  sound(800,.08,"triangle",.05);
-  setTimeout(
-    ()=>sound(1100,.12,"triangle",.04),
-    70
-  );
+function goodSound(){
+ beep(520,.1);
+ setTimeout(()=>beep(660,.1),100);
+ setTimeout(()=>beep(800,.2),200);
 }
 
-/* =========================================================
-   LIGHTING
-========================================================= */
+function starSound(){
+ beep(850,.07,"triangle",.05);
+ setTimeout(()=>beep(1100,.12,"triangle",.04),70);
+}
 
-const hemi =
-  new THREE.HemisphereLight(
-    0xffffff,
-    0x8b682c,
-    2.2
-  );
+/* =====================================================
+   LIGHT
+===================================================== */
 
-scene.add(hemi);
-
-const sun =
-  new THREE.DirectionalLight(
-    0xffffff,
-    3
-  );
-
-sun.position.set(
-  -40,
-  70,
-  30
+scene.add(
+ new THREE.HemisphereLight(
+  0xffffff,
+  0x70502e,
+  2.4
+ )
 );
 
+const sun =
+ new THREE.DirectionalLight(
+  0xffffff,
+  3
+);
+
+sun.position.set(-40,70,30);
 sun.castShadow=true;
 
 sun.shadow.mapSize.width=2048;
@@ -777,2494 +659,1625 @@ sun.shadow.camera.bottom=-100;
 
 scene.add(sun);
 
-/* =========================================================
+/* =====================================================
    MATERIALS
-========================================================= */
+===================================================== */
 
-const mats={
+const grass =
+ new THREE.MeshStandardMaterial({
+  color:0x66c75b,
+  roughness:1
+ });
 
-  grass:new THREE.MeshStandardMaterial({
-    color:0x68c95c,
-    roughness:1
-  }),
+const path =
+ new THREE.MeshStandardMaterial({
+  color:0xe5b86e
+ });
 
-  grass2:new THREE.MeshStandardMaterial({
-    color:0x83df68,
-    roughness:1
-  }),
+const water =
+ new THREE.MeshStandardMaterial({
+  color:0x36bdf0,
+  roughness:.15
+ });
 
-  path:new THREE.MeshStandardMaterial({
-    color:0xe6bd79
-  }),
+const wool =
+ new THREE.MeshStandardMaterial({
+  color:0xf8f5e9,
+  roughness:1
+ });
 
-  water:new THREE.MeshStandardMaterial({
-    color:0x39bdf4,
-    roughness:.15,
-    metalness:.05
-  }),
+const skin =
+ new THREE.MeshStandardMaterial({
+  color:0x594237,
+  roughness:1
+ });
 
-  wool:new THREE.MeshStandardMaterial({
-    color:0xf8f7ed,
-    roughness:1
-  }),
+const dark =
+ new THREE.MeshStandardMaterial({
+  color:0x332520
+ });
 
-  woolShadow:new THREE.MeshStandardMaterial({
-    color:0xe2e0d6,
-    roughness:1
-  }),
+const pink =
+ new THREE.MeshStandardMaterial({
+  color:0xff9cab
+ });
 
-  skin:new THREE.MeshStandardMaterial({
-    color:0x5e4739,
-    roughness:1
-  }),
+const wood =
+ new THREE.MeshStandardMaterial({
+  color:0x95592f
+ });
 
-  darkSkin:new THREE.MeshStandardMaterial({
-    color:0x3e2d27,
-    roughness:1
-  }),
+const green =
+ new THREE.MeshStandardMaterial({
+  color:0x35a65a
+ });
 
-  pink:new THREE.MeshStandardMaterial({
-    color:0xff9caa
-  }),
+const gold =
+ new THREE.MeshStandardMaterial({
+  color:0xffd32f,
+  metalness:.4,
+  roughness:.35
+ });
 
-  wood:new THREE.MeshStandardMaterial({
-    color:0x9b5b32
-  }),
+/* =====================================================
+   WORLD HELPERS
+===================================================== */
 
-  leaf:new THREE.MeshStandardMaterial({
-    color:0x38a85a
-  }),
-
-  flower:new THREE.MeshStandardMaterial({
-    color:0xffe64b
-  }),
-
-  castle:new THREE.MeshStandardMaterial({
-    color:0xffdf8b
-  }),
-
-  roof:new THREE.MeshStandardMaterial({
-    color:0xf05a55
-  }),
-
-  stone:new THREE.MeshStandardMaterial({
-    color:0xb8a99a
-  }),
-
-  gold:new THREE.MeshStandardMaterial({
-    color:0xffd332,
-    metalness:.3,
-    roughness:.4
-  })
-
-};
-
-/* =========================================================
-   WORLD
-========================================================= */
-
-function box(
-  x,y,z,
-  sx,sy,sz,
-  material
+function addBox(
+ x,y,z,
+ sx,sy,sz,
+ material
 ){
 
-  const m =
-    new THREE.Mesh(
-      new THREE.BoxGeometry(
-        sx,sy,sz
-      ),
-      material
-    );
+ const m=
+  new THREE.Mesh(
+   new THREE.BoxGeometry(
+    sx,sy,sz
+   ),
+   material
+  );
 
-  m.position.set(x,y,z);
+ m.position.set(x,y,z);
+ m.castShadow=true;
+ m.receiveShadow=true;
 
-  m.castShadow=true;
-  m.receiveShadow=true;
+ scene.add(m);
 
-  scene.add(m);
-
-  return m;
+ return m;
 }
 
-function cylinder(
-  x,y,z,
-  r1,r2,h,
-  material,
-  segments=16
+function addSphere(
+ x,y,z,
+ sx,sy,sz,
+ material
 ){
 
-  const m =
-    new THREE.Mesh(
-      new THREE.CylinderGeometry(
-        r1,r2,h,segments
-      ),
-      material
-    );
+ const m=
+  new THREE.Mesh(
+   new THREE.SphereGeometry(
+    1,18,14
+   ),
+   material
+  );
 
-  m.position.set(x,y,z);
+ m.position.set(x,y,z);
+ m.scale.set(sx,sy,sz);
+ m.castShadow=true;
 
-  m.castShadow=true;
-  m.receiveShadow=true;
+ scene.add(m);
 
-  scene.add(m);
-
-  return m;
+ return m;
 }
 
-function sphere(
-  x,y,z,
-  sx,sy,sz,
-  material
-){
+/* =====================================================
+   GROUND
+===================================================== */
 
-  const m =
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        1,
-        20,
-        16
-      ),
-      material
-    );
-
-  m.position.set(x,y,z);
-  m.scale.set(sx,sy,sz);
-
-  m.castShadow=true;
-  m.receiveShadow=true;
-
-  scene.add(m);
-
-  return m;
-}
-
-/* Ground */
-
-box(
-  0,-.35,0,
-  180,.7,180,
-  mats.grass
+addBox(
+ 0,-.3,0,
+ 180,.6,180,
+ grass
 );
 
-/* Paths */
-
-box(
-  0,.015,0,
-  10,.08,180,
-  mats.path
+addBox(
+ 0,.01,0,
+ 9,.08,180,
+ path
 );
 
-box(
-  0,.02,-20,
-  180,.09,8,
-  mats.path
+addBox(
+ 0,.015,-20,
+ 180,.09,8,
+ path
 );
 
-/* River */
-
-box(
-  0,.05,48,
-  180,.12,10,
-  mats.water
+addBox(
+ 0,.02,48,
+ 180,.1,10,
+ water
 );
 
-for(let i=0;i<35;i++){
-
-  const rock =
-    sphere(
-      -80+Math.random()*160,
-      .12,
-      43+Math.random()*10,
-      .6,
-      .25,
-      .9,
-      mats.stone
-    );
-
-}
-
-/* =========================================================
-   CLOUDS
-========================================================= */
-
-const clouds=[];
-
-function createCloud(x,y,z,s){
-
-  const g=new THREE.Group();
-
-  for(let i=0;i<7;i++){
-
-    const c =
-      new THREE.Mesh(
-        new THREE.SphereGeometry(
-          1,
-          16,
-          12
-        ),
-        new THREE.MeshStandardMaterial({
-          color:0xffffff
-        })
-      );
-
-    c.position.set(
-      (i-3)*1.1,
-      Math.sin(i)*.35,
-      Math.random()*.5
-    );
-
-    c.scale.set(
-      1.6,
-      1,
-      1.2
-    );
-
-    g.add(c);
-
-  }
-
-  g.position.set(x,y,z);
-  g.scale.setScalar(s);
-
-  scene.add(g);
-
-  clouds.push(g);
-}
-
-createCloud(-35,35,-50,3);
-createCloud(35,40,-75,4);
-createCloud(0,30,-110,2.5);
-createCloud(55,33,20,3);
-
-/* =========================================================
+/* =====================================================
    TREES
-========================================================= */
+===================================================== */
 
 const obstacles=[];
 
-function createTree(x,z,s=1){
+function tree(x,z,s){
 
-  const g=new THREE.Group();
+ const g=new THREE.Group();
 
-  const trunk =
-    new THREE.Mesh(
-      new THREE.CylinderGeometry(
-        .35*s,
-        .5*s,
-        3*s,
-        10
-      ),
-      mats.wood
-    );
+ const trunk=
+  new THREE.Mesh(
+   new THREE.CylinderGeometry(
+    .35*s,.48*s,3*s,10
+   ),
+   wood
+  );
 
-  trunk.position.y=1.5*s;
-  trunk.castShadow=true;
-  g.add(trunk);
+ trunk.position.y=1.5*s;
+ trunk.castShadow=true;
+ g.add(trunk);
 
-  for(let i=0;i<5;i++){
+ for(let i=0;i<5;i++){
 
-    const crown =
-      new THREE.Mesh(
-        new THREE.SphereGeometry(
-          1.7*s,
-          14,
-          12
-        ),
-        mats.leaf
-      );
+  const crown=
+   new THREE.Mesh(
+    new THREE.SphereGeometry(
+     1.7*s,14,12
+    ),
+    green
+   );
 
-    crown.position.set(
-      (Math.random()-.5)*1.4*s,
-      (3.1+Math.random()*.9)*s,
-      (Math.random()-.5)*1.4*s
-    );
+  crown.position.set(
+   (Math.random()-.5)*1.5*s,
+   3.1*s+Math.random()*s,
+   (Math.random()-.5)*1.5*s
+  );
 
-    crown.castShadow=true;
+  crown.castShadow=true;
+  g.add(crown);
+ }
 
-    g.add(crown);
-  }
+ g.position.set(x,0,z);
+ scene.add(g);
 
-  g.position.set(x,0,z);
-
-  scene.add(g);
-
-  obstacles.push({
-    x,
-    z,
-    radius:2*s
-  });
+ obstacles.push({
+  x,z,r:2.2*s
+ });
 
 }
 
 for(let i=0;i<70;i++){
 
-  const x=-75+Math.random()*150;
-  const z=-75+Math.random()*150;
+ const x=-76+Math.random()*152;
+ const z=-76+Math.random()*152;
 
-  if(Math.abs(x)<9) continue;
+ if(Math.abs(x)<8)continue;
+ if(Math.abs(z+20)<7)continue;
+ if(Math.abs(z-48)<7)continue;
 
-  if(Math.abs(z+20)<7) continue;
-
-  if(Math.abs(z-48)<7) continue;
-
-  createTree(
-    x,
-    z,
-    .7+Math.random()*.8
-  );
+ tree(
+  x,z,
+  .65+Math.random()*.9
+ );
 
 }
 
-/* Flowers */
+/* =====================================================
+   FLOWERS
+===================================================== */
 
 for(let i=0;i<220;i++){
 
-  const x=-78+Math.random()*156;
-  const z=-78+Math.random()*156;
+ const g=new THREE.Group();
 
-  const g=new THREE.Group();
+ const stem=
+  new THREE.Mesh(
+   new THREE.CylinderGeometry(
+    .035,.05,.45,6
+   ),
+   green
+  );
 
-  const stem=
-    new THREE.Mesh(
-      new THREE.CylinderGeometry(
-        .035,.05,.45,6
-      ),
-      mats.leaf
-    );
+ stem.position.y=.22;
+ g.add(stem);
 
-  stem.position.y=.22;
+ const flowerMat=
+  new THREE.MeshStandardMaterial({
+   color:[
+    0xff5c7a,
+    0xffe239,
+    0xa66cff,
+    0xff8739
+   ][Math.floor(Math.random()*4)]
+  });
 
-  g.add(stem);
+ for(let j=0;j<5;j++){
 
-  for(let j=0;j<5;j++){
+  const petal=
+   new THREE.Mesh(
+    new THREE.SphereGeometry(
+     .14,8,8
+    ),
+    flowerMat
+   );
 
-    const petal=
-      new THREE.Mesh(
-        new THREE.SphereGeometry(
-          .13,8,8
-        ),
-        new THREE.MeshStandardMaterial({
-          color:[
-            0xff5d76,
-            0xffff45,
-            0xb476ff,
-            0xff8f35
-          ][Math.floor(Math.random()*4)]
-        })
-      );
+  petal.position.set(
+   Math.cos(j*1.25)*.16,
+   .48,
+   Math.sin(j*1.25)*.16
+  );
 
-    petal.position.set(
-      Math.cos(j*1.25)*.16,
-      .5,
-      Math.sin(j*1.25)*.16
-    );
+  g.add(petal);
+ }
 
-    g.add(petal);
-  }
+ g.position.set(
+  -78+Math.random()*156,
+  0,
+  -78+Math.random()*156
+ );
 
-  g.position.set(x,0,z);
-
-  scene.add(g);
+ scene.add(g);
 }
 
-/* =========================================================
+/* =====================================================
    CASTLE
-========================================================= */
+===================================================== */
 
 function createCastle(){
 
-  const g=new THREE.Group();
+ const g=new THREE.Group();
 
-  const main =
-    new THREE.Mesh(
-      new THREE.BoxGeometry(
-        28,13,14
-      ),
-      mats.castle
-    );
+ const castleMat=
+  new THREE.MeshStandardMaterial({
+   color:0xffdf8b
+  });
 
-  main.position.y=6.5;
-  main.castShadow=true;
-  g.add(main);
+ const roofMat=
+  new THREE.MeshStandardMaterial({
+   color:0xf05b55
+  });
 
-  const roof =
-    new THREE.Mesh(
-      new THREE.ConeGeometry(
-        11,7,4
-      ),
-      mats.roof
-    );
+ const body=
+  new THREE.Mesh(
+   new THREE.BoxGeometry(28,13,14),
+   castleMat
+  );
 
-  roof.rotation.y=Math.PI/4;
-  roof.position.y=16;
-  roof.castShadow=true;
+ body.position.y=6.5;
+ body.castShadow=true;
+ g.add(body);
 
+ for(const x of [-13,13]){
+
+  const tower=
+   new THREE.Mesh(
+    new THREE.CylinderGeometry(
+     4,4,18,16
+    ),
+    castleMat
+   );
+
+  tower.position.set(x,9,0);
+  tower.castShadow=true;
+  g.add(tower);
+
+  const roof=
+   new THREE.Mesh(
+    new THREE.ConeGeometry(
+     5.2,6,16
+    ),
+    roofMat
+   );
+
+  roof.position.set(x,21,0);
   g.add(roof);
+ }
 
-  for(const x of [-13,13]){
-
-    const tower =
-      new THREE.Mesh(
-        new THREE.CylinderGeometry(
-          4,4,18,16
-        ),
-        mats.castle
-      );
-
-    tower.position.set(
-      x,
-      9,
-      0
-    );
-
-    tower.castShadow=true;
-
-    g.add(tower);
-
-    const tr =
-      new THREE.Mesh(
-        new THREE.ConeGeometry(
-          5.2,6,16
-        ),
-        mats.roof
-      );
-
-    tr.position.set(
-      x,
-      21,
-      0
-    );
-
-    g.add(tr);
-  }
-
-  const door =
-    new THREE.Mesh(
-      new THREE.BoxGeometry(
-        5,7,.5
-      ),
-      mats.wood
-    );
-
-  door.position.set(
-    0,
-    3.5,
-    7.2
+ const roof=
+  new THREE.Mesh(
+   new THREE.ConeGeometry(
+    11,7,4
+   ),
+   roofMat
   );
 
-  g.add(door);
+ roof.rotation.y=Math.PI/4;
+ roof.position.y=16;
+ g.add(roof);
 
-  g.position.set(
-    0,
-    0,
-    -65
+ const door=
+  new THREE.Mesh(
+   new THREE.BoxGeometry(5,7,.5),
+   wood
   );
 
-  scene.add(g);
+ door.position.set(0,3.5,7.2);
+ g.add(door);
+
+ g.position.set(0,0,-65);
+
+ scene.add(g);
 }
 
 createCastle();
 
-/* =========================================================
-   SHEEP MODEL
-========================================================= */
+/* =====================================================
+   SHEEP
+===================================================== */
 
-function woolPuff(
-  group,
-  x,y,z,
-  scale=.8
-){
+function puff(g,x,y,z,s){
 
-  const p =
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        1,
-        16,
-        12
-      ),
-      mats.wool
-    );
+ const p=
+  new THREE.Mesh(
+   new THREE.SphereGeometry(
+    1,16,12
+   ),
+   wool
+  );
 
-  p.position.set(x,y,z);
-  p.scale.setScalar(scale);
+ p.position.set(x,y,z);
+ p.scale.setScalar(s);
+ p.castShadow=true;
 
-  p.castShadow=true;
-
-  group.add(p);
-
-  return p;
+ g.add(p);
 }
 
-function createSheep(
-  x,
-  z,
-  scale=1,
-  bodyColor=mats.wool
-){
+function createSheep(x,z,scale=1){
 
-  const g=new THREE.Group();
+ const g=new THREE.Group();
 
-  g.userData={
-    originalY:0,
-    happy:false,
-    sad:true,
-    walking:false
-  };
+ g.userData={
+  legs:[],
+  head:null,
+  happy:false,
+  sad:false,
+  npc:false,
+  level:-1,
+  baseY:0,
+  animOffset:Math.random()*10
+ };
 
-  /* Body */
+ const body=
+  new THREE.Mesh(
+   new THREE.SphereGeometry(
+    1.8,24,18
+   ),
+   wool
+  );
 
-  const body=
+ body.scale.set(1.55,1.15,1);
+ body.position.y=2.3;
+ body.castShadow=true;
+ g.add(body);
+
+ [
+  [-1.1,2.7,0],
+  [-.55,3.02,.1],
+  [0,3.1,0],
+  [.55,3.02,.1],
+  [1.1,2.7,0],
+  [-1.2,2.2,.35],
+  [1.2,2.2,.35],
+  [-.55,1.78,.3],
+  [.4,1.75,.3]
+ ].forEach(p=>
+  puff(g,p[0],p[1],p[2],.56)
+ );
+
+ const head=
+  new THREE.Mesh(
+   new THREE.SphereGeometry(
+    1,20,16
+   ),
+   skin
+  );
+
+ head.scale.set(.75,.95,.8);
+ head.position.set(1.62,2.47,0);
+ head.castShadow=true;
+ g.add(head);
+
+ g.userData.head=head;
+
+ const muzzle=
+  new THREE.Mesh(
+   new THREE.SphereGeometry(
+    1,16,12
+   ),
+   pink
+  );
+
+ muzzle.scale.set(.42,.32,.5);
+ muzzle.position.set(2.2,2.17,0);
+ g.add(muzzle);
+
+ const eyeMat=
+  new THREE.MeshStandardMaterial({
+   color:0x111111
+  });
+
+ const eye1=
+  new THREE.Mesh(
+   new THREE.SphereGeometry(
+    .13,12,8
+   ),
+   eyeMat
+  );
+
+ eye1.position.set(
+  2.02,2.76,-.43
+ );
+
+ g.add(eye1);
+
+ const eye2=eye1.clone();
+ eye2.position.z=.43;
+ g.add(eye2);
+
+ g.userData.eyes=[eye1,eye2];
+
+ const ear1=
+  new THREE.Mesh(
+   new THREE.SphereGeometry(
+    .45,14,10
+   ),
+   dark
+  );
+
+ ear1.scale.set(.25,.6,.8);
+ ear1.position.set(
+  1.35,3.08,-.72
+ );
+ ear1.rotation.z=-.4;
+ g.add(ear1);
+
+ const ear2=ear1.clone();
+ ear2.position.z=.72;
+ ear2.rotation.z=.4;
+ g.add(ear2);
+
+ for(const zz of [-.65,.65]){
+  for(const xx of [-.75,.75]){
+
+   const leg=
     new THREE.Mesh(
-      new THREE.SphereGeometry(
-        1.8,
-        24,
-        18
-      ),
-      bodyColor
+     new THREE.CylinderGeometry(
+      .18,.22,.95,12
+     ),
+     dark
     );
 
-  body.scale.set(
-    1.55,
-    1.15,
-    1
-  );
+   leg.position.set(xx,.9,zz);
+   leg.castShadow=true;
 
-  body.position.y=2.25;
+   g.add(leg);
 
-  body.castShadow=true;
-
-  g.add(body);
-
-  /* Wool puffs */
-
-  const puffPositions=[
-    [-1.1,2.7,0],
-    [-.5,3.05,.15],
-    [0,3.15,0],
-    [.6,3,.15],
-    [1.15,2.65,0],
-    [-1.25,2.15,.45],
-    [1.2,2.15,.4],
-    [-.6,1.75,.3],
-    [.3,1.7,.3]
-  ];
-
-  puffPositions.forEach(
-    p=>woolPuff(
-      g,
-      p[0],p[1],p[2],
-      .55
-    )
-  );
-
-  /* Head */
-
-  const head=
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        1,
-        20,
-        16
-      ),
-      mats.skin
-    );
-
-  head.scale.set(
-    .75,.95,.8
-  );
-
-  head.position.set(
-    1.65,
-    2.45,
-    0
-  );
-
-  head.castShadow=true;
-
-  g.add(head);
-
-  g.userData.head=head;
-
-  /* Muzzle */
-
-  const muzzle=
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        1,
-        16,
-        12
-      ),
-      mats.pink
-    );
-
-  muzzle.scale.set(
-    .42,.32,.5
-  );
-
-  muzzle.position.set(
-    2.22,
-    2.15,
-    0
-  );
-
-  g.add(muzzle);
-
-  /* Eyes */
-
-  const eyeMat=
-    new THREE.MeshStandardMaterial({
-      color:0x151515
-    });
-
-  const eyeL=
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        .13,12,8
-      ),
-      eyeMat
-    );
-
-  eyeL.position.set(
-    2.03,
-    2.75,
-    -.43
-  );
-
-  g.add(eyeL);
-
-  const eyeR=
-    eyeL.clone();
-
-  eyeR.position.z=.43;
-
-  g.add(eyeR);
-
-  g.userData.eyes=[
-    eyeL,
-    eyeR
-  ];
-
-  /* Ears */
-
-  const earMat=
-    new THREE.MeshStandardMaterial({
-      color:0x49342b
-    });
-
-  const ear1=
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        .45,14,10
-      ),
-      earMat
-    );
-
-  ear1.scale.set(
-    .25,.6,.8
-  );
-
-  ear1.position.set(
-    1.35,
-    3.05,
-    -.72
-  );
-
-  ear1.rotation.z=-.4;
-
-  g.add(ear1);
-
-  const ear2=ear1.clone();
-
-  ear2.position.z=.72;
-
-  ear2.rotation.z=.4;
-
-  g.add(ear2);
-
-  /* Legs */
-
-  const legs=[];
-
-  for(const zPos of [-.65,.65]){
-
-    for(const xPos of [-.75,.75]){
-
-      const leg=
-        new THREE.Mesh(
-          new THREE.CylinderGeometry(
-            .18,.22,.95,12
-          ),
-          mats.darkSkin
-        );
-
-      leg.position.set(
-        xPos,
-        .9,
-        zPos
-      );
-
-      leg.castShadow=true;
-
-      g.add(leg);
-
-      legs.push(leg);
-    }
+   g.userData.legs.push(leg);
   }
+ }
 
-  g.userData.legs=legs;
-
-  /* Tail */
-
-  const tail=
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        .45,14,10
-      ),
-      mats.wool
-    );
-
-  tail.position.set(
-    -1.75,
-    2.5,
-    0
+ const tail=
+  new THREE.Mesh(
+   new THREE.SphereGeometry(
+    .45,14,10
+   ),
+   wool
   );
 
-  tail.scale.set(
-    .5,.7,.5
-  );
+ tail.position.set(-1.75,2.5,0);
+ tail.scale.set(.5,.7,.5);
+ g.add(tail);
 
-  g.add(tail);
+ g.scale.setScalar(scale);
+ g.position.set(x,0,z);
 
-  g.scale.setScalar(scale);
+ scene.add(g);
 
-  g.position.set(
-    x,
-    0,
-    z
-  );
-
-  scene.add(g);
-
-  return g;
+ return g;
 }
 
-/* Player */
+const player=
+ createSheep(0,10,1.18);
 
-const player =
-  createSheep(
-    0,
-    10,
-    1.18
-  );
-
-player.userData.sad=false;
-player.userData.happy=true;
-
-/* =========================================================
-   NPC DATA
-========================================================= */
-
-const levels=[
-
-  {
-    title:"The Hurtful Comment",
-    mission:"Find Milly and help her deal with a hurtful comment.",
-    npc:"Milly",
-    x:-17,
-    z:-10,
-    problem:
-      "Someone posted a really hurtful comment about my wool. It made me feel awful.",
-    answers:[
-      {
-        text:"Tell Milly she should reply with an even meaner comment.",
-        good:false,
-        feedback:
-          "A mean reply can make the situation worse. It is safer to pause and get support."
-      },
-      {
-        text:"Support Milly, save the evidence and suggest reporting the comment.",
-        good:true,
-        feedback:
-          "Great choice. Save evidence, report harmful content and talk to a trusted person."
-      },
-      {
-        text:"Tell everyone else to ignore the problem completely.",
-        good:false,
-        feedback:
-          "Ignoring harmful behaviour is not always enough. Reporting and getting support can help."
-      }
-    ]
-  },
-
-  {
-    title:"The Group Chat",
-    mission:"Find Pip and help with nasty group-chat messages.",
-    npc:"Pip",
-    x:22,
-    z:-10,
-    problem:
-      "A group chat keeps sending me nasty messages. I don't know what to do.",
-    answers:[
-      {
-        text:"Stay in the chat and argue with everyone.",
-        good:false,
-        feedback:
-          "Arguments can escalate the situation."
-      },
-      {
-        text:"Block the people sending abuse, keep evidence and tell a trusted person.",
-        good:true,
-        feedback:
-          "Good decision. Blocking, saving evidence and getting support are useful steps."
-      },
-      {
-        text:"Send their private messages to everyone else.",
-        good:false,
-        feedback:
-          "Sharing private messages can create another problem."
-      }
-    ]
-  },
-
-  {
-    title:"The Shared Picture",
-    mission:"Find Cloud and help after a picture was shared without permission.",
-    npc:"Cloud",
-    x:-24,
-    z:25,
-    problem:
-      "Someone shared a picture of me without asking. I feel embarrassed.",
-    answers:[
-      {
-        text:"Share the picture again so everyone sees it.",
-        good:false,
-        feedback:
-          "Sharing it further spreads the problem."
-      },
-      {
-        text:"Ask for the picture to be removed, report it if needed and get help.",
-        good:true,
-        feedback:
-          "Excellent. Asking for removal, reporting and getting help can protect Cloud."
-      },
-      {
-        text:"Tell Cloud it doesn't matter and walk away.",
-        good:false,
-        feedback:
-          "Cloud deserves support. Listening and helping can make a real difference."
-      }
-    ]
-  },
-
-  {
-    title:"Left Out",
-    mission:"Find Daisy and help someone who is being deliberately excluded.",
-    npc:"Daisy",
-    x:28,
-    z:23,
-    problem:
-      "I saw another sheep being deliberately left out of an online group.",
-    answers:[
-      {
-        text:"Laugh along so you don't become the target.",
-        good:false,
-        feedback:
-          "Joining in can make the excluded sheep feel even worse."
-      },
-      {
-        text:"Include them, check how they are feeling and tell a trusted person if needed.",
-        good:true,
-        feedback:
-          "Wonderful. Inclusion and support can help someone feel safe and welcome."
-      },
-      {
-        text:"Make another group just to talk about them.",
-        good:false,
-        feedback:
-          "That would continue the exclusion."
-      }
-    ]
-  },
-
-  {
-    title:"The Angry Reply",
-    mission:"Find Baailey and stop a situation from escalating.",
-    npc:"Baailey",
-    x:0,
-    z:-38,
-    problem:
-      "My friend wants to send a really mean reply back to someone who upset them.",
-    answers:[
-      {
-        text:"Tell them to send it immediately.",
-        good:false,
-        feedback:
-          "Sending something while angry can make things worse."
-      },
-      {
-        text:"Suggest taking a pause, not sending the mean reply and getting support.",
-        good:true,
-        feedback:
-          "Great. Taking a pause can prevent an angry response from escalating the situation."
-      },
-      {
-        text:"Help write an even harsher message.",
-        good:false,
-        feedback:
-          "Adding more hurtful words increases the conflict."
-      }
-    ]
-  },
-
-  {
-    title:"The Fake Account",
-    mission:"Help Ruby after someone created an account pretending to be her.",
-    npc:"Ruby",
-    x:-38,
-    z:-35,
-    problem:
-      "Someone made an account pretending to be me. People think it is really mine.",
-    answers:[
-      {
-        text:"Pretend to be them back.",
-        good:false,
-        feedback:
-          "Making another fake account can create more confusion."
-      },
-      {
-        text:"Tell a trusted adult, report the fake account and keep screenshots.",
-        good:true,
-        feedback:
-          "Correct. Evidence and reporting can help deal with impersonation."
-      },
-      {
-        text:"Give the account your password to prove who you are.",
-        good:false,
-        feedback:
-          "Never give your password to prove your identity."
-      }
-    ]
-  },
-
-  {
-    title:"The Secret Password",
-    mission:"Find Sunny and help them keep an account secure.",
-    npc:"Sunny",
-    x:38,
-    z:-37,
-    problem:
-      "Someone online says they need my password so they can help fix my account.",
-    answers:[
-      {
-        text:"Give them the password quickly.",
-        good:false,
-        feedback:
-          "Passwords should stay private."
-      },
-      {
-        text:"Do not share the password and ask a trusted person or official support for help.",
-        good:true,
-        feedback:
-          "Exactly. Keep passwords private and use official support channels."
-      },
-      {
-        text:"Post the password publicly so everyone can help.",
-        good:false,
-        feedback:
-          "Passwords should never be posted publicly."
-      }
-    ]
-  },
-
-  {
-    title:"The Rumour",
-    mission:"Find Poppy and help stop an online rumour.",
-    npc:"Poppy",
-    x:40,
-    z:30,
-    problem:
-      "A rumour about me is spreading online and people keep reposting it.",
-    answers:[
-      {
-        text:"Repost it to see how far it goes.",
-        good:false,
-        feedback:
-          "Reposting spreads the rumour further."
-      },
-      {
-        text:"Don't spread it, report harmful posts and support Poppy.",
-        good:true,
-        feedback:
-          "Good choice. Don't amplify rumours and make sure Poppy has support."
-      },
-      {
-        text:"Invent another rumour about the person who started it.",
-        good:false,
-        feedback:
-          "Creating another rumour would continue the cycle."
-      }
-    ]
-  }
-];
-
-/* =========================================================
-   NPC CREATION
-========================================================= */
+/* =====================================================
+   NPCS
+===================================================== */
 
 const npcs=[];
 
-levels.forEach((data,index)=>{
+levels.forEach((data,i)=>{
 
-  const npc=
-    createSheep(
-      data.x,
-      data.z,
-      1.03
-    );
+ const npc=
+  createSheep(
+   data.x,
+   data.z,
+   1.04
+  );
 
-  npc.userData.npc=true;
-  npc.userData.level=index;
-  npc.userData.name=data.npc;
-  npc.userData.happy=false;
-  npc.userData.sad=true;
+ npc.userData.npc=true;
+ npc.userData.sad=true;
+ npc.userData.level=i;
+ npc.userData.name=data.name;
 
-  npcs.push(npc);
+ npcs.push(npc);
 
 });
 
-/* =========================================================
-   FLOATING NAME LABELS
-========================================================= */
+/* =====================================================
+   NAME LABELS
+===================================================== */
 
-const labels=[];
+function labelSprite(text){
 
-function makeLabel(text){
+ const canvas=
+  document.createElement("canvas");
 
-  const canvas=
-    document.createElement("canvas");
+ canvas.width=512;
+ canvas.height=128;
 
-  canvas.width=512;
-  canvas.height=128;
+ const ctx=
+  canvas.getContext("2d");
 
-  const ctx=canvas.getContext("2d");
+ ctx.fillStyle="white";
+ ctx.strokeStyle="#111";
+ ctx.lineWidth=8;
 
-  ctx.clearRect(
-    0,0,512,128
+ ctx.beginPath();
+ ctx.roundRect(
+  12,12,488,104,25
+ );
+ ctx.fill();
+ ctx.stroke();
+
+ ctx.fillStyle="#111";
+ ctx.font="bold 48px Arial";
+ ctx.textAlign="center";
+ ctx.textBaseline="middle";
+
+ ctx.fillText(
+  text,
+  256,
+  64
+ );
+
+ const texture=
+  new THREE.CanvasTexture(canvas);
+
+ const sprite=
+  new THREE.Sprite(
+   new THREE.SpriteMaterial({
+    map:texture,
+    transparent:true
+   })
   );
 
-  ctx.fillStyle="#ffffff";
-  ctx.strokeStyle="#111111";
-  ctx.lineWidth=8;
+ sprite.scale.set(4.4,1.1,1);
 
-  ctx.roundRect(
-    15,15,482,98,25
-  );
-
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle="#111111";
-  ctx.font="bold 48px Arial";
-  ctx.textAlign="center";
-  ctx.textBaseline="middle";
-
-  ctx.fillText(
-    text,
-    256,
-    64
-  );
-
-  const texture=
-    new THREE.CanvasTexture(canvas);
-
-  const material=
-    new THREE.SpriteMaterial({
-      map:texture,
-      transparent:true
-    });
-
-  const sprite=
-    new THREE.Sprite(material);
-
-  sprite.scale.set(
-    4.5,
-    1.12,
-    1
-  );
-
-  return sprite;
+ return sprite;
 }
 
 npcs.forEach((npc,i)=>{
 
-  const label=
-    makeLabel(
-      levels[i].npc
-    );
+ const label=
+  labelSprite(levels[i].name);
 
-  label.position.y=5.3;
+ label.position.y=5.3;
 
-  npc.add(label);
-
-  labels.push(label);
+ npc.add(label);
 
 });
 
-/* =========================================================
+/* =====================================================
+   COLLECTIBLES
+===================================================== */
+
+const collectibles=[];
+
+for(let i=0;i<30;i++){
+
+ const s=
+  new THREE.Mesh(
+   new THREE.OctahedronGeometry(.38),
+   gold
+  );
+
+ s.position.set(
+  -72+Math.random()*144,
+  1.4,
+  -72+Math.random()*144
+ );
+
+ s.castShadow=true;
+
+ scene.add(s);
+
+ collectibles.push(s);
+}
+
+/* =====================================================
    GAME STATE
-========================================================= */
+===================================================== */
 
-let gameStarted=false;
-
+let started=false;
 let currentLevel=0;
-
 let stars=0;
-
-let kindness=0;
-
-let selectedAnswer=null;
-
-let nearbyNPC=null;
-
-let dialogueOpen=false;
-
-let jumpVelocity=0;
-
-let onGround=true;
+let points=0;
+let selected=-1;
+let talking=false;
+let nearby=null;
 
 let yaw=0;
+let pitch=.15;
 
-let pitch=.18;
+let verticalVelocity=0;
+let grounded=true;
 
-let keys={};
+const keys={};
 
-let joystick={
-  x:0,
-  y:0
-};
+let joystickX=0;
+let joystickY=0;
 
-const completed=
-  new Array(levels.length).fill(false);
+/* =====================================================
+   UI UPDATE
+===================================================== */
 
-/* =========================================================
-   UI
-========================================================= */
+function updateUI(){
 
-const loadBar=
-  document.getElementById("loadBar");
+ document.getElementById("level").textContent=
+  `Level ${currentLevel+1} / ${levels.length}`;
 
-let load=0;
+ document.getElementById("stars").textContent=
+  `Stars: ${stars}`;
 
-const loadTimer=
-  setInterval(()=>{
+ document.getElementById("meterFill").style.width=
+  Math.min(points,100)+"%";
 
-    load+=8;
+ document.getElementById("questTitle").textContent=
+  levels[currentLevel].title;
 
-    loadBar.style.width=
-      Math.min(load,100)+"%";
-
-    if(load>=100){
-
-      clearInterval(loadTimer);
-
-      setTimeout(()=>{
-
-        document.getElementById(
-          "loading"
-        ).style.opacity="0";
-
-        setTimeout(()=>{
-
-          document.getElementById(
-            "loading"
-          ).remove();
-
-        },500);
-
-      },200);
-
-    }
-
-  },60);
-
-function updateHUD(){
-
-  document.getElementById(
-    "levelText"
-  ).textContent=
-    `Level ${currentLevel+1} / ${levels.length}`;
-
-  document.getElementById(
-    "stars"
-  ).textContent=
-    `Stars: ${stars}`;
-
-  document.getElementById(
-    "kindnessFill"
-  ).style.width=
-    Math.min(
-      100,
-      kindness
-    )+"%";
-
-  document.getElementById(
-    "questText"
-  ).textContent=
-    levels[currentLevel].mission;
+ document.getElementById("questText").textContent=
+  levels[currentLevel].mission;
 }
+
+/* =====================================================
+   START
+===================================================== */
+
+document
+ .getElementById("startButton")
+ .addEventListener("click",()=>{
+
+  initAudio();
+
+  started=true;
+
+  document.getElementById("start").style.display="none";
+
+  updateUI();
+
+  beep(500,.1);
+  setTimeout(()=>beep(700,.15),100);
+
+ });
+
+/* =====================================================
+   DIALOGUE
+===================================================== */
 
 function openDialogue(npc){
 
-  if(!gameStarted) return;
+ if(!started||talking)return;
 
-  const data=
-    levels[npc.userData.level];
+ if(npc.userData.level!==currentLevel){
 
-  if(npc.userData.level!==currentLevel){
-
-    showTemporary(
-      npc.userData.happy
-      ? `${data.npc} has already been helped.`
-      : `Complete the current level first.`
-    );
-
-    return;
-  }
-
-  nearbyNPC=npc;
-  dialogueOpen=true;
-  selectedAnswer=null;
-
-  document.getElementById(
-    "dialogue"
-  ).style.display="block";
-
-  document.getElementById(
-    "npcName"
-  ).textContent=data.npc;
-
-  document.getElementById(
-    "npcProblem"
-  ).textContent=data.problem;
-
-  document.getElementById(
-    "npcFace"
-  ).textContent=
-    data.npc.charAt(0);
-
-  const answers=
-    document.getElementById(
-      "answers"
-    );
-
-  answers.innerHTML="";
-
-  data.answers.forEach(
-    (answer,index)=>{
-
-      const button=
-        document.createElement("button");
-
-      button.className="answer";
-
-      button.textContent=
-        answer.text;
-
-      button.onclick=()=>{
-
-        document
-          .querySelectorAll(".answer")
-          .forEach(
-            b=>b.classList.remove("selected")
-          );
-
-        button.classList.add("selected");
-
-        selectedAnswer=index;
-
-        document.getElementById(
-          "send"
-        ).disabled=false;
-
-      };
-
-      answers.appendChild(button);
-
-    }
+  showPrompt(
+   npc.userData.happy
+    ? `${npc.userData.name} is happy now!`
+    : "Finish the current level first."
   );
 
-  document.getElementById(
-    "send"
-  ).style.display="block";
+  return;
+ }
 
-  document.getElementById(
-    "send"
-  ).disabled=true;
+ talking=true;
+ selected=-1;
 
-  document.getElementById(
-    "feedback"
-  ).style.display="none";
+ const data=
+  levels[npc.userData.level];
 
-  document.getElementById(
-    "nextBtn"
-  ).style.display="none";
+ nearby=npc;
 
-  sound(520,.08,"sine",.04);
-}
+ document.getElementById("dialogue").style.display="block";
 
-function submitAnswer(){
+ document.getElementById("npcName").textContent=
+  data.name;
 
-  if(
-    selectedAnswer===null ||
-    !nearbyNPC
-  ) return;
+ document.getElementById("npcProblem").textContent=
+  data.problem;
 
-  const data=
-    levels[nearbyNPC.userData.level];
+ document.getElementById("npcCircle").textContent=
+  data.name.charAt(0);
 
-  const answer=
-    data.answers[selectedAnswer];
+ const answers=
+  document.getElementById("answers");
 
-  const feedback=
-    document.getElementById(
-      "feedback"
+ answers.innerHTML="";
+
+ data.answers.forEach((answer,i)=>{
+
+  const button=
+   document.createElement("button");
+
+  button.className="answer";
+  button.textContent=answer[0];
+
+  button.addEventListener("click",()=>{
+
+   document
+    .querySelectorAll(".answer")
+    .forEach(b=>
+     b.classList.remove("selected")
     );
 
-  feedback.textContent=
-    answer.feedback;
+   button.classList.add("selected");
 
-  feedback.style.display="block";
+   selected=i;
 
-  if(answer.good){
+   document.getElementById("send").disabled=false;
 
-    feedback.className="good";
-
-    kindness=
-      Math.min(
-        100,
-        kindness+20
-      );
-
-    stars++;
-
-    completed[currentLevel]=true;
-
-    nearbyNPC.userData.happy=true;
-    nearbyNPC.userData.sad=false;
-
-    makeHappy(nearbyNPC);
-
-    successSound();
-
-    document.getElementById(
-      "send"
-    ).style.display="none";
-
-    document.getElementById(
-      "nextBtn"
-    ).style.display="block";
-
-    document.getElementById(
-      "nextBtn"
-    ).textContent=
-      currentLevel<
-      levels.length-1
-      ? "CONTINUE TO NEXT LEVEL"
-      : "FINISH ADVENTURE";
-
-    updateHUD();
-
-  }else{
-
-    feedback.className="bad";
-
-    badSound();
-
-  }
-
-}
-
-/* =========================================================
-   SAD / HAPPY ANIMATION
-========================================================= */
-
-function makeHappy(npc){
-
-  npc.userData.happy=true;
-  npc.userData.sad=false;
-
-  npc.userData.head.rotation.z=0;
-
-  npc.userData.legs.forEach(
-    leg=>{
-      leg.rotation.z=0;
-    }
-  );
-
-  /* Make label brighter */
-
-  const label=
-    npc.children.find(
-      child=>child.type==="Sprite"
-    );
-
-  if(label){
-    label.material.opacity=1;
-  }
-
-}
-
-function animateSheep(
-  sheep,
-  time
-){
-
-  const ud=sheep.userData;
-
-  if(
-    ud.npc &&
-    ud.sad
-  ){
-
-    /* sad head */
-
-    ud.head.rotation.z=
-      -.15+
-      Math.sin(time*2)*.025;
-
-    ud.head.rotation.x=.15;
-
-    /* droopy ears */
-
-    sheep.children.forEach(
-      child=>{
-        if(
-          child.geometry &&
-          child.geometry.type==="SphereGeometry"
-        ){
-          /* intentionally subtle */
-        }
-      }
-    );
-
-    /* slow breathing */
-
-    sheep.scale.y=
-      sheep.scale.x*
-      (1+
-      Math.sin(time*2)*.015);
-
-  }else if(
-    ud.npc &&
-    ud.happy
-  ){
-
-    ud.head.rotation.z=
-      Math.sin(time*5)*.08;
-
-    ud.head.rotation.x=
-      Math.sin(time*4)*.04;
-
-    sheep.position.y=
-      Math.abs(
-        Math.sin(time*4)
-      )*.12;
-
-  }
-
-}
-
-/* =========================================================
-   MOVEMENT
-========================================================= */
-
-function jump(){
-
-  if(!gameStarted) return;
-
-  if(onGround){
-
-    jumpVelocity=10;
-
-    onGround=false;
-
-    jumpSound();
-  }
-}
-
-function canMoveTo(
-  x,z
-){
-
-  if(
-    x<-83 ||
-    x>83 ||
-    z<-83 ||
-    z>83
-  ){
-    return false;
-  }
-
-  for(const o of obstacles){
-
-    const dx=x-o.x;
-    const dz=z-o.z;
-
-    if(
-      dx*dx+
-      dz*dz<
-      (o.radius+1.3)*
-      (o.radius+1.3)
-    ){
-      return false;
-    }
-
-  }
-
-  return true;
-}
-
-function updateMovement(dt){
-
-  if(!gameStarted) return;
-
-  if(dialogueOpen) return;
-
-  let forward=0;
-  let strafe=0;
-
-  if(
-    keys["w"] ||
-    keys["arrowup"]
-  ) forward+=1;
-
-  if(
-    keys["s"] ||
-    keys["arrowdown"]
-  ) forward-=1;
-
-  if(
-    keys["a"] ||
-    keys["arrowleft"]
-  ) strafe-=1;
-
-  if(
-    keys["d"] ||
-    keys["arrowright"]
-  ) strafe+=1;
-
-  forward+=-joystick.y;
-  strafe+=joystick.x;
-
-  const length=
-    Math.hypot(
-      forward,
-      strafe
-    );
-
-  if(length>1){
-
-    forward/=length;
-    strafe/=length;
-
-  }
-
-  const speed=9;
-
-  const dx=
-    (
-      Math.sin(yaw)*forward+
-      Math.cos(yaw)*strafe
-    )*
-    speed*
-    dt;
-
-  const dz=
-    (
-      Math.cos(yaw)*forward-
-      Math.sin(yaw)*strafe
-    )*
-    speed*
-    dt;
-
-  const nx=
-    player.position.x+dx;
-
-  const nz=
-    player.position.z+dz;
-
-  if(
-    canMoveTo(
-      nx,
-      player.position.z
-    )
-  ){
-    player.position.x=nx;
-  }
-
-  if(
-    canMoveTo(
-      player.position.x,
-      nz
-    )
-  ){
-    player.position.z=nz;
-  }
-
-  const moving=
-    length>.05;
-
-  if(moving){
-
-    player.rotation.y=
-      Math.atan2(
-        dx,
-        dz
-      );
-
-    player.userData.legs.forEach(
-      (leg,i)=>{
-
-        leg.rotation.z=
-          Math.sin(
-            performance.now()*.012+
-            i*Math.PI
-          )*.25;
-
-      }
-    );
-
-  }else{
-
-    player.userData.legs.forEach(
-      leg=>{
-        leg.rotation.z=0;
-      }
-    );
-
-  }
-
-  /* Gravity */
-
-  if(!onGround){
-
-    jumpVelocity-=25*dt;
-
-    player.position.y+=
-      jumpVelocity*dt;
-
-    if(
-      player.position.y<=0
-    ){
-
-      player.position.y=0;
-
-      jumpVelocity=0;
-
-      onGround=true;
-
-    }
-
-  }
-
-}
-
-/* =========================================================
-   CAMERA
-========================================================= */
-
-function updateCamera(){
-
-  const distance=11;
-
-  const target=
-    new THREE.Vector3(
-      player.position.x,
-      player.position.y+2.7,
-      player.position.z
-    );
-
-  const offset=
-    new THREE.Vector3(
-      Math.sin(yaw)*distance,
-      5.3+pitch*3,
-      Math.cos(yaw)*distance
-    );
-
-  const desired=
-    target.clone().add(offset);
-
-  camera.position.lerp(
-    desired,
-    .09
-  );
-
-  camera.lookAt(target);
-
-}
-
-/* =========================================================
-   INTERACTION
-========================================================= */
-
-function findNearby(){
-
-  let nearest=null;
-  let nearestDistance=Infinity;
-
-  npcs.forEach(npc=>{
-
-    const d=
-      player.position.distanceTo(
-        npc.position
-      );
-
-    if(
-      d<5.5 &&
-      d<nearestDistance
-    ){
-
-      nearest=npc;
-      nearestDistance=d;
-
-    }
+   talkSound();
 
   });
 
-  return nearest;
+  answers.appendChild(button);
+
+ });
+
+ document.getElementById("send").style.display="block";
+ document.getElementById("send").disabled=true;
+
+ document.getElementById("feedback").style.display="none";
+ document.getElementById("next").style.display="none";
+
+ talkSound();
+}
+
+/* =====================================================
+   SEND
+===================================================== */
+
+document
+ .getElementById("send")
+ .addEventListener("click",()=>{
+
+  if(selected<0||!nearby)return;
+
+  const data=
+   levels[nearby.userData.level];
+
+  const answer=
+   data.answers[selected];
+
+  const feedback=
+   document.getElementById("feedback");
+
+  feedback.textContent=answer[2];
+  feedback.style.display="block";
+
+  if(answer[1]){
+
+   feedback.className="good";
+
+   points=Math.min(100,points+13);
+   stars++;
+
+   nearby.userData.sad=false;
+   nearby.userData.happy=true;
+
+   goodSound();
+
+   makeHappy(nearby);
+
+   document.getElementById("send").style.display="none";
+
+   document.getElementById("next").style.display="block";
+
+   document.getElementById("next").textContent=
+    currentLevel===levels.length-1
+     ? "FINISH ADVENTURE"
+     : "NEXT LEVEL";
+
+   updateUI();
+
+  }else{
+
+   feedback.className="bad";
+
+   badSound();
+
+  }
+
+ });
+
+/* =====================================================
+   NEXT LEVEL
+===================================================== */
+
+document
+ .getElementById("next")
+ .addEventListener("click",()=>{
+
+  /* CLOSE DIALOGUE FIRST */
+
+  document.getElementById("dialogue").style.display="none";
+
+  talking=false;
+
+  /* Show completion screen */
+
+  document.getElementById("levelComplete").style.display="flex";
+
+  document.getElementById("completeHeading").textContent=
+   `Level ${currentLevel+1} Complete!`;
+
+  document.getElementById("completeStars").textContent=
+   `You earned a star! Total stars: ${stars}`;
+
+  document.getElementById("completeMessage").textContent=
+   `${levels[currentLevel].name} is now feeling much happier. The sheep stays in the world and you can visit them again.`;
+
+  document.getElementById("continueButton").textContent=
+   currentLevel===levels.length-1
+    ? "GET CERTIFICATE"
+    : "START NEXT LEVEL";
+
+ });
+
+/* =====================================================
+   CONTINUE
+===================================================== */
+
+document
+ .getElementById("continueButton")
+ .addEventListener("click",()=>{
+
+  document.getElementById("levelComplete").style.display="none";
+
+  if(currentLevel===levels.length-1){
+
+   finishGame();
+   return;
+
+  }
+
+  currentLevel++;
+
+  player.position.set(0,0,10);
+
+  yaw=0;
+  pitch=.15;
+
+  updateUI();
+
+  goodSound();
+
+ });
+
+/* =====================================================
+   FINISH
+===================================================== */
+
+function finishGame(){
+
+ started=false;
+
+ document.getElementById("certificate").style.display="flex";
+
+ document.getElementById("certLevels").textContent=
+  levels.length;
+
+ document.getElementById("certStars").textContent=
+  stars;
+
+ document.getElementById("certPoints").textContent=
+  points;
+
+ goodSound();
+}
+
+/* =====================================================
+   CERTIFICATE NAME
+===================================================== */
+
+document
+ .getElementById("nameInput")
+ .addEventListener("input",e=>{
+
+  document.getElementById("certName").textContent=
+   e.target.value.trim() ||
+   "SheepSafe Player";
+
+ });
+
+document
+ .getElementById("printCertificate")
+ .addEventListener("click",()=>{
+
+  window.print();
+
+ });
+
+document
+ .getElementById("playAgain")
+ .addEventListener("click",()=>{
+
+  location.reload();
+
+ });
+
+/* =====================================================
+   PROMPT
+===================================================== */
+
+let promptTimer;
+
+function showPrompt(text){
+
+ const p=
+  document.getElementById("prompt");
+
+ p.textContent=text;
+ p.style.display="block";
+
+ clearTimeout(promptTimer);
+
+ promptTimer=
+  setTimeout(()=>{
+   if(!talking)
+    p.style.display="none";
+  },1800);
+}
+
+/* =====================================================
+   INTERACTION
+===================================================== */
+
+function findNearest(){
+
+ let result=null;
+ let distance=Infinity;
+
+ npcs.forEach(npc=>{
+
+  const d=
+   player.position.distanceTo(
+    npc.position
+   );
+
+  if(d<5.8&&d<distance){
+
+   result=npc;
+   distance=d;
+
+  }
+
+ });
+
+ return result;
 }
 
 function interact(){
 
-  if(dialogueOpen) return;
+ if(!started)return;
 
-  const npc=findNearby();
+ const npc=findNearest();
 
-  if(npc){
+ if(npc){
 
-    openDialogue(npc);
+  openDialogue(npc);
 
-  }else{
+ }else{
 
-    showTemporary(
-      "Move closer to a sheep to talk."
-    );
-
-  }
-
-}
-
-let tempTimer=null;
-
-function showTemporary(text){
-
-  const prompt=
-    document.getElementById(
-      "prompt"
-    );
-
-  prompt.textContent=text;
-  prompt.style.display="block";
-
-  clearTimeout(tempTimer);
-
-  tempTimer=
-    setTimeout(
-      ()=>{
-        if(!dialogueOpen)
-          prompt.style.display="none";
-      },
-      1800
-    );
-
-}
-
-/* =========================================================
-   KEYBOARD
-========================================================= */
-
-window.addEventListener(
-  "keydown",
-  e=>{
-
-    keys[e.key.toLowerCase()]=true;
-
-    if(
-      e.code==="Space"
-    ){
-
-      e.preventDefault();
-
-      jump();
-
-    }
-
-    if(
-      e.key.toLowerCase()==="e"
-    ){
-
-      interact();
-
-    }
-
-  }
-);
-
-window.addEventListener(
-  "keyup",
-  e=>{
-
-    keys[e.key.toLowerCase()]=false;
-
-  }
-);
-
-/* =========================================================
-   MOUSE LOOK
-========================================================= */
-
-let dragging=false;
-let lastX=0;
-let lastY=0;
-
-renderer.addEventListener(
-  "pointerdown",
-  e=>{
-
-    if(
-      e.pointerType==="mouse"
-    ){
-
-      dragging=true;
-
-      lastX=e.clientX;
-      lastY=e.clientY;
-
-    }
-
-  }
-);
-
-window.addEventListener(
-  "pointerup",
-  ()=>{
-    dragging=false;
-  }
-);
-
-window.addEventListener(
-  "pointermove",
-  e=>{
-
-    if(!dragging) return;
-
-    const dx=e.clientX-lastX;
-    const dy=e.clientY-lastY;
-
-    lastX=e.clientX;
-    lastY=e.clientY;
-
-    yaw-=dx*.006;
-
-    pitch=
-      Math.max(
-        -.4,
-        Math.min(
-          .8,
-          pitch-dy*.004
-        )
-      );
-
-  }
-);
-
-/* =========================================================
-   MOBILE JOYSTICK
-========================================================= */
-
-const joystickElement=
-  document.getElementById(
-    "joystick"
+  showPrompt(
+   "Move closer to a sheep."
   );
+
+ }
+
+}
+
+/* =====================================================
+   KEYBOARD
+===================================================== */
+
+window.addEventListener("keydown",e=>{
+
+ const key=e.key.toLowerCase();
+
+ keys[key]=true;
+
+ if(e.code==="Space"){
+
+  e.preventDefault();
+  jump();
+
+ }
+
+ if(key==="e"){
+
+  interact();
+
+ }
+
+});
+
+window.addEventListener("keyup",e=>{
+
+ keys[e.key.toLowerCase()]=false;
+
+});
+
+/* =====================================================
+   JUMP
+===================================================== */
+
+function jump(){
+
+ if(!started||talking)return;
+
+ if(grounded){
+
+  grounded=false;
+  verticalVelocity=10;
+
+  jumpSound();
+
+ }
+
+}
+
+/* =====================================================
+   COLLISION
+===================================================== */
+
+function allowed(x,z){
+
+ if(x<-84||x>84||z<-84||z>84)
+  return false;
+
+ for(const o of obstacles){
+
+  const dx=x-o.x;
+  const dz=z-o.z;
+
+  if(
+   dx*dx+dz*dz<
+   (o.r+1.2)*(o.r+1.2)
+  ){
+   return false;
+  }
+
+ }
+
+ return true;
+}
+
+/* =====================================================
+   MOVEMENT
+===================================================== */
+
+function move(dt){
+
+ if(!started||talking)return;
+
+ let forward=0;
+ let side=0;
+
+ if(keys["w"]||keys["arrowup"])
+  forward++;
+
+ if(keys["s"]||keys["arrowdown"])
+  forward--;
+
+ if(keys["a"]||keys["arrowleft"])
+  side--;
+
+ if(keys["d"]||keys["arrowright"])
+  side++;
+
+ forward+=-joystickY;
+ side+=joystickX;
+
+ const len=
+  Math.hypot(forward,side);
+
+ if(len>1){
+
+  forward/=len;
+  side/=len;
+
+ }
+
+ const speed=9;
+
+ const dx=
+  (
+   Math.sin(yaw)*forward+
+   Math.cos(yaw)*side
+  )*speed*dt;
+
+ const dz=
+  (
+   Math.cos(yaw)*forward-
+   Math.sin(yaw)*side
+  )*speed*dt;
+
+ const nx=
+  player.position.x+dx;
+
+ const nz=
+  player.position.z+dz;
+
+ if(allowed(nx,player.position.z))
+  player.position.x=nx;
+
+ if(allowed(player.position.x,nz))
+  player.position.z=nz;
+
+ if(len>.05){
+
+  player.rotation.y=
+   Math.atan2(dx,dz);
+
+  player.userData.legs.forEach((leg,i)=>{
+
+   leg.rotation.z=
+    Math.sin(
+     performance.now()*.012+
+     i*Math.PI
+    )*.25;
+
+  });
+
+ }else{
+
+  player.userData.legs.forEach(
+   leg=>leg.rotation.z=0
+  );
+
+ }
+
+ /* gravity */
+
+ if(!grounded){
+
+  verticalVelocity-=25*dt;
+
+  player.position.y+=
+   verticalVelocity*dt;
+
+  if(player.position.y<=0){
+
+   player.position.y=0;
+   verticalVelocity=0;
+   grounded=true;
+
+  }
+
+ }
+
+}
+
+/* =====================================================
+   HAPPY / SAD SHEEP ANIMATION
+===================================================== */
+
+function animateNPC(npc,time){
+
+ const ud=npc.userData;
+
+ if(ud.sad){
+
+  ud.head.rotation.z=
+   -.15+
+   Math.sin(time*2+ud.animOffset)*.025;
+
+  ud.head.rotation.x=.13;
+
+  /* sad sheep stays low */
+
+  npc.position.y=
+   Math.sin(time*1.7+ud.animOffset)*.015;
+
+ }else{
+
+  /* happy bouncing */
+
+  npc.position.y=
+   Math.abs(
+    Math.sin(
+     time*3.5+
+     ud.animOffset
+    )
+   )*.12;
+
+  ud.head.rotation.z=
+   Math.sin(
+    time*4+
+    ud.animOffset
+   )*.1;
+
+  ud.head.rotation.x=
+   Math.sin(
+    time*3+
+    ud.animOffset
+   )*.05;
+
+ }
+
+}
+
+/* =====================================================
+   CAMERA
+===================================================== */
+
+function updateCamera(){
+
+ const target=
+  new THREE.Vector3(
+   player.position.x,
+   player.position.y+2.7,
+   player.position.z
+  );
+
+ const distance=11;
+
+ const offset=
+  new THREE.Vector3(
+   Math.sin(yaw)*distance,
+   5.2+pitch*3,
+   Math.cos(yaw)*distance
+  );
+
+ const desired=
+  target.clone().add(offset);
+
+ camera.position.lerp(
+  desired,
+  .09
+ );
+
+ camera.lookAt(target);
+
+}
+
+/* =====================================================
+   MOUSE LOOK
+===================================================== */
+
+let mouseDown=false;
+let mouseX=0;
+let mouseY=0;
+
+renderer.domElement.addEventListener(
+ "pointerdown",e=>{
+
+  if(e.pointerType==="mouse"){
+
+   mouseDown=true;
+   mouseX=e.clientX;
+   mouseY=e.clientY;
+
+  }
+
+ });
+
+window.addEventListener(
+ "pointerup",
+ ()=>mouseDown=false
+);
+
+window.addEventListener(
+ "pointermove",e=>{
+
+  if(!mouseDown)return;
+
+  const dx=e.clientX-mouseX;
+  const dy=e.clientY-mouseY;
+
+  mouseX=e.clientX;
+  mouseY=e.clientY;
+
+  yaw-=dx*.006;
+
+  pitch=
+   Math.max(
+    -.5,
+    Math.min(
+     .8,
+     pitch-dy*.004
+    )
+   );
+
+ });
+
+/* =====================================================
+   MOBILE JOYSTICK
+===================================================== */
+
+const joystick=
+ document.getElementById("joystick");
 
 const stick=
-  document.getElementById(
-    "stick"
+ document.getElementById("stick");
+
+let joyActive=false;
+
+joystick.addEventListener(
+ "pointerdown",e=>{
+
+  joyActive=true;
+
+  joystick.setPointerCapture(
+   e.pointerId
   );
 
-let joystickActive=false;
+  joystickMove(e);
 
-joystickElement.addEventListener(
-  "pointerdown",
-  e=>{
+ });
 
-    joystickActive=true;
+joystick.addEventListener(
+ "pointermove",e=>{
 
-    joystickElement.setPointerCapture(
-      e.pointerId
-    );
+  if(joyActive)
+   joystickMove(e);
 
-    updateJoystick(e);
+ });
 
-  }
+joystick.addEventListener(
+ "pointerup",resetJoystick
 );
 
-joystickElement.addEventListener(
-  "pointermove",
-  e=>{
-
-    if(
-      joystickActive
-    ){
-      updateJoystick(e);
-    }
-
-  }
+joystick.addEventListener(
+ "pointercancel",resetJoystick
 );
 
-joystickElement.addEventListener(
-  "pointerup",
-  resetJoystick
-);
+function joystickMove(e){
 
-joystickElement.addEventListener(
-  "pointercancel",
-  resetJoystick
-);
+ const r=
+  joystick.getBoundingClientRect();
 
-function updateJoystick(e){
+ let x=
+  e.clientX-
+  (r.left+r.width/2);
 
-  const r=
-    joystickElement.getBoundingClientRect();
+ let y=
+  e.clientY-
+  (r.top+r.height/2);
 
-  let x=
-    e.clientX-
-    (r.left+r.width/2);
+ const max=55;
 
-  let y=
-    e.clientY-
-    (r.top+r.height/2);
+ const length=
+  Math.hypot(x,y);
 
-  const max=55;
+ if(length>max){
 
-  const len=
-    Math.hypot(x,y);
+  x=x/length*max;
+  y=y/length*max;
 
-  if(len>max){
+ }
 
-    x=x/len*max;
-    y=y/len*max;
+ joystickX=x/max;
+ joystickY=y/max;
 
-  }
+ stick.style.left=
+  `calc(50% + ${x}px)`;
 
-  joystick.x=x/max;
-  joystick.y=y/max;
+ stick.style.top=
+  `calc(50% + ${y}px)`;
 
-  stick.style.left=
-    `calc(50% + ${x}px)`;
-
-  stick.style.top=
-    `calc(50% + ${y}px)`;
 }
 
 function resetJoystick(){
 
-  joystickActive=false;
+ joyActive=false;
 
-  joystick.x=0;
-  joystick.y=0;
+ joystickX=0;
+ joystickY=0;
 
-  stick.style.left="50%";
-  stick.style.top="50%";
-}
-
-document
-  .getElementById("jumpBtn")
-  .addEventListener(
-    "pointerdown",
-    e=>{
-      e.preventDefault();
-      jump();
-    }
-  );
-
-document
-  .getElementById("talkBtn")
-  .addEventListener(
-    "pointerdown",
-    e=>{
-      e.preventDefault();
-      interact();
-    }
-  );
-
-/* =========================================================
-   DIALOGUE BUTTONS
-========================================================= */
-
-document
-  .getElementById("send")
-  .onclick=
-    submitAnswer;
-
-document
-  .getElementById("nextBtn")
-  .onclick=
-    nextLevel;
-
-/* =========================================================
-   NEXT LEVEL
-========================================================= */
-
-function nextLevel(){
-
-  document.getElementById(
-    "dialogue"
-  ).style.display="none";
-
-  dialogueOpen=false;
-
-  document.getElementById(
-    "levelComplete"
-  ).style.display="flex";
-
-  document.getElementById(
-    "completeTitle"
-  ).textContent=
-    `Level ${currentLevel+1} Complete!`;
-
-  document.getElementById(
-    "completeStars"
-  ).textContent=
-    "You earned a star!";
-
-  document.getElementById(
-    "completeText"
-  ).textContent=
-    levels[currentLevel].title+
-    " has been completed. Keep exploring and helping the other sheep.";
+ stick.style.left="50%";
+ stick.style.top="50%";
 
 }
 
+/* =====================================================
+   MOBILE BUTTONS
+===================================================== */
+
 document
-  .getElementById(
-    "continueLevel"
-  )
-  .onclick=()=>{
+ .getElementById("jump")
+ .addEventListener(
+  "pointerdown",
+  e=>{
+   e.preventDefault();
+   jump();
+  }
+ );
 
-    document.getElementById(
-      "levelComplete"
-    ).style.display="none";
+document
+ .getElementById("talk")
+ .addEventListener(
+  "pointerdown",
+  e=>{
+   e.preventDefault();
+   interact();
+  }
+ );
 
-    currentLevel++;
+/* =====================================================
+   COLLECT STARS
+===================================================== */
 
-    if(
-      currentLevel>=levels.length
-    ){
+function collectStars(){
 
-      finishGame();
+ if(!started)return;
 
-      return;
-    }
+ collectibles.forEach(star=>{
 
-    updateHUD();
+  if(
+   star.visible &&
+   player.position.distanceTo(
+    star.position
+   )<1.8
+  ){
 
-    player.position.set(
-      0,
-      0,
-      10
+   star.visible=false;
+
+   points=
+    Math.min(
+     100,
+     points+3
     );
 
-    yaw=0;
+   starSound();
 
-    successSound();
+   updateUI();
 
-  };
+  }
 
-/* =========================================================
-   FINISH GAME
-========================================================= */
+  if(star.visible){
 
-function finishGame(){
+   star.rotation.y+=.035;
 
-  gameStarted=false;
+   star.position.y=
+    1.35+
+    Math.sin(
+     performance.now()*.003+
+     star.position.x
+    )*.18;
 
-  document.getElementById(
-    "levelComplete"
-  ).style.display="none";
+  }
 
-  document.getElementById(
-    "certificate"
-  ).style.display="flex";
-
-  document.getElementById(
-    "certLevels"
-  ).textContent=
-    levels.length;
-
-  document.getElementById(
-    "certStars"
-  ).textContent=
-    stars;
-
-  document.getElementById(
-    "certPoints"
-  ).textContent=
-    kindness;
-
-  successSound();
+ });
 
 }
 
-/* =========================================================
-   START / RESTART
-========================================================= */
-
-document
-  .getElementById(
-    "startBtn"
-  )
-  .onclick=()=>{
-
-    startAudio();
-
-    document.getElementById(
-      "startScreen"
-    ).style.display="none";
-
-    gameStarted=true;
-
-    updateHUD();
-
-    sound(440,.12,"sine",.05);
-    setTimeout(
-      ()=>sound(660,.15,"sine",.05),
-      100
-    );
-
-  };
-
-document
-  .getElementById(
-    "restartBtn"
-  )
-  .onclick=()=>{
-
-    location.reload();
-
-  };
-
-/* =========================================================
-   ANIMATION
-========================================================= */
+/* =====================================================
+   GAME LOOP
+===================================================== */
 
 const clock=
-  new THREE.Clock();
+ new THREE.Clock();
 
 function animate(){
 
-  requestAnimationFrame(
-    animate
+ requestAnimationFrame(animate);
+
+ const dt=
+  Math.min(
+   clock.getDelta(),
+   .05
   );
 
-  const dt=
-    Math.min(
-      clock.getDelta(),
-      .05
-    );
+ const time=
+  performance.now()/1000;
 
-  const time=
-    performance.now()/1000;
+ move(dt);
 
-  /* Clouds */
+ updateCamera();
 
-  clouds.forEach(
-    (cloud,i)=>{
+ collectStars();
 
-      cloud.position.x+=
-        dt*(.7+i*.15);
+ npcs.forEach(
+  npc=>animateNPC(
+   npc,time
+  )
+ );
 
-      if(
-        cloud.position.x>100
-      ){
-        cloud.position.x=-100;
-      }
+ const nearest=
+  findNearest();
 
-    }
-  );
+ if(
+  nearest &&
+  !talking &&
+  nearest.userData.level===currentLevel
+ ){
 
-  /* Player animation */
+  document.getElementById("prompt").textContent=
+   `Press E to talk to ${nearest.userData.name}`;
 
-  if(gameStarted){
+  document.getElementById("prompt").style.display=
+   "block";
 
-    if(onGround){
+ }else if(!talking){
 
-      player.position.y=
-        Math.sin(time*2.5)*.035;
+  document.getElementById("prompt").style.display=
+   "none";
 
-    }
+ }
 
-  }
+ renderer.render(
+  scene,
+  camera
+ );
 
-  npcs.forEach(
-    npc=>{
-      animateSheep(
-        npc,
-        time
-      );
-    }
-  );
-
-  updateMovement(dt);
-
-  updateCamera();
-
-  const nearest=
-    findNearby();
-
-  nearbyNPC=nearest;
-
-  const prompt=
-    document.getElementById(
-      "prompt"
-    );
-
-  if(
-    nearest &&
-    !dialogueOpen
-  ){
-
-    const data=
-      levels[
-        nearest.userData.level
-      ];
-
-    if(
-      nearest.userData.level===
-      currentLevel
-    ){
-
-      prompt.textContent=
-        `Press E to talk to ${data.npc}`;
-
-      prompt.style.display="block";
-
-    }else{
-
-      prompt.style.display="none";
-
-    }
-
-  }else if(!dialogueOpen){
-
-    prompt.style.display="none";
-
-  }
-
-  renderer.render(
-    scene,
-    camera
-  );
 }
 
 animate();
 
-/* =========================================================
+/* =====================================================
    RESIZE
-========================================================= */
+===================================================== */
 
 window.addEventListener(
-  "resize",
-  ()=>{
+ "resize",
+ ()=>{
 
-    camera.aspect=
-      innerWidth/innerHeight;
+  camera.aspect=
+   innerWidth/innerHeight;
 
-    camera.updateProjectionMatrix();
+  camera.updateProjectionMatrix();
 
-    renderer.setSize(
-      innerWidth,
-      innerHeight
-    );
-
-  }
-);
-
-/* =========================================================
-   CLICK / TOUCH WORLD INTERACTION
-========================================================= */
-
-renderer.addEventListener(
-  "dblclick",
-  ()=>{
-    if(gameStarted){
-      interact();
-    }
-  }
-);
-
-/* =========================================================
-   EXTRA COLLECTIBLE STARS
-========================================================= */
-
-const collectibles=[];
-
-for(let i=0;i<25;i++){
-
-  const star=
-    new THREE.Mesh(
-      new THREE.OctahedronGeometry(
-        .35
-      ),
-      mats.gold
-    );
-
-  star.position.set(
-    -70+Math.random()*140,
-    1.3,
-    -70+Math.random()*140
+  renderer.setSize(
+   innerWidth,
+   innerHeight
   );
 
-  star.castShadow=true;
+ });
 
-  scene.add(star);
+/* =====================================================
+   LOADING
+===================================================== */
 
-  collectibles.push(star);
+let load=0;
 
-}
+const loadingTimer=
+ setInterval(()=>{
 
-function checkCollectibles(){
+  load+=5;
 
-  if(!gameStarted) return;
+  document.getElementById(
+   "loadFill"
+  ).style.width=
+   load+"%";
 
-  collectibles.forEach(
-    star=>{
+  if(load>=100){
 
-      if(
-        star.visible &&
-        player.position.distanceTo(
-          star.position
-        )<1.8
-      ){
+   clearInterval(loadingTimer);
 
-        star.visible=false;
+   setTimeout(()=>{
 
-        kindness=
-          Math.min(
-            100,
-            kindness+3
-          );
-
-        collectSound();
-
-        updateHUD();
-
-      }
-
-      star.rotation.y+=.03;
-      star.position.y=
-        1.3+
-        Math.sin(
-          performance.now()*.003+
-          star.position.x
-        )*.2;
-
-    }
-  );
-}
-
-/* Add collectible checking */
-
-const oldAnimate=animate;
-
-/* =========================================================
-   SAVE PROGRESS
-========================================================= */
-
-function saveProgress(){
-
-  localStorage.setItem(
-    "sheepsafe-progress",
-    JSON.stringify({
-      level:currentLevel,
-      stars,
-      kindness,
-      completed
-    })
-  );
-
-}
-
-setInterval(
-  saveProgress,
-  3000
-);
-
-/* =========================================================
-   CERTIFICATE PLAYER NAME
-========================================================= */
-
-const nameInput=
-  document.createElement("input");
-
-nameInput.placeholder=
-  "Enter your name for the certificate";
-
-nameInput.style.cssText=`
-  width:100%;
-  max-width:500px;
-  padding:13px;
-  border:3px solid #111;
-  border-radius:12px;
-  font-size:17px;
-  font-weight:bold;
-  margin:10px 0;
-`;
-
-document
-  .querySelector(
-    ".certificatePaper"
-  )
-  .insertBefore(
-    nameInput,
     document.getElementById(
-      "certificateName"
-    )
-  );
+     "loading"
+    ).style.display="none";
 
-nameInput.addEventListener(
-  "input",
-  ()=>{
-    document.getElementById(
-      "certificateName"
-    ).textContent=
-      nameInput.value ||
-      "SheepSafe Player";
+   },300);
+
   }
-);
 
-/* =========================================================
-   PATCH ANIMATION FOR COLLECTIBLES
-========================================================= */
-
-const baseAnimate=
-  animate;
-
-function gameLoop(){
-
-  requestAnimationFrame(
-    gameLoop
-  );
-
-  checkCollectibles();
-
-}
-
-/* We already have the renderer loop.
-   Collectibles are updated separately. */
-
-gameLoop();
+ },50);
 
 </script>
 
