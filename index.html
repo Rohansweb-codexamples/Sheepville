@@ -1,282 +1,3044 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Cuddly Sheep — Kindness Kingdom</title>
 
-  <title>Cuddly Sheep — Kindness Kingdom</title>
+<style>
+*{
+  box-sizing:border-box;
+}
 
-  <link rel="stylesheet" href="style.css">
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#78d4ff;
+  color:#203847;
+  touch-action:none;
+}
+
+canvas{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.hidden{
+  display:none!important;
+}
+
+/* ================================
+   LOADING
+================================ */
+
+#loading{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    linear-gradient(
+      145deg,
+      #53c9ff 0%,
+      #8be4ff 28%,
+      #ffe05c 65%,
+      #ff9a55 100%
+    );
+}
+
+.loader{
+  width:min(430px,90%);
+  padding:40px;
+  border-radius:34px;
+  text-align:center;
+  background:rgba(255,255,255,.94);
+  box-shadow:0 30px 100px rgba(25,65,85,.35);
+}
+
+.loaderSheep{
+  font-size:90px;
+  animation:bounceSheep 1s ease-in-out infinite alternate;
+}
+
+.loader h1{
+  margin:8px 0;
+  font-size:36px;
+}
+
+.loader p{
+  color:#617581;
+}
+
+.loadingTrack{
+  height:13px;
+  overflow:hidden;
+  border-radius:30px;
+  background:#e2edf1;
+  margin-top:25px;
+}
+
+.loadingBar{
+  width:0;
+  height:100%;
+  border-radius:30px;
+  background:linear-gradient(
+    90deg,
+    #ff884d,
+    #ffd34e,
+    #66d99b
+  );
+  animation:loadGame 2s forwards;
+}
+
+@keyframes loadGame{
+  to{width:100%}
+}
+
+@keyframes bounceSheep{
+  from{
+    transform:translateY(0) rotate(-3deg);
+  }
+  to{
+    transform:translateY(-12px) rotate(3deg);
+  }
+}
+
+
+/* ================================
+   HUD
+================================ */
+
+#hud{
+  position:fixed;
+  z-index:100;
+  left:16px;
+  right:16px;
+  top:15px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  pointer-events:none;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 14px;
+  border:2px solid rgba(255,255,255,.85);
+  border-radius:18px;
+  background:rgba(255,255,255,.9);
+  box-shadow:0 8px 30px rgba(20,65,80,.2);
+}
+
+.brandIcon{
+  font-size:30px;
+}
+
+.brandTitle{
+  font-weight:900;
+  font-size:15px;
+}
+
+.brandSub{
+  display:block;
+  margin-top:2px;
+  color:#657985;
+  font-size:11px;
+}
+
+.stats{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+
+.stat{
+  padding:10px 13px;
+  border:2px solid rgba(255,255,255,.85);
+  border-radius:16px;
+  background:rgba(255,255,255,.9);
+  box-shadow:0 8px 30px rgba(20,65,80,.2);
+  font-size:13px;
+}
+
+.stat b{
+  color:#ec733c;
+}
+
+.helpButton{
+  margin-left:auto;
+  width:44px;
+  height:44px;
+  border:2px solid white;
+  border-radius:50%;
+  background:rgba(255,255,255,.94);
+  font-size:20px;
+  font-weight:bold;
+  cursor:pointer;
+  pointer-events:auto;
+}
+
+
+/* ================================
+   CROSSHAIR
+================================ */
+
+#crosshair{
+  position:fixed;
+  z-index:80;
+  left:50%;
+  top:50%;
+  width:10px;
+  height:10px;
+  transform:translate(-50%,-50%);
+  border:2px solid white;
+  border-radius:50%;
+  box-shadow:0 0 10px #000;
+}
+
+
+/* ================================
+   INTERACTION PROMPT
+================================ */
+
+#interactPrompt{
+  position:fixed;
+  z-index:90;
+  left:50%;
+  bottom:125px;
+  transform:translateX(-50%);
+  padding:12px 20px;
+  border-radius:18px;
+  color:#273d48;
+  background:rgba(255,255,255,.94);
+  box-shadow:0 10px 35px rgba(20,60,75,.25);
+  font-weight:800;
+  text-align:center;
+}
+
+
+/* ================================
+   QUEST PANEL
+================================ */
+
+#quest{
+  position:fixed;
+  z-index:95;
+  left:50%;
+  bottom:20px;
+  transform:translateX(-50%);
+  width:min(650px,calc(100% - 28px));
+  padding:21px 24px;
+  border-radius:26px;
+  background:rgba(255,255,255,.95);
+  box-shadow:0 20px 60px rgba(25,60,75,.3);
+  text-align:center;
+}
+
+.questLabel{
+  color:#ef7540;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+
+#questTitle{
+  margin:7px 0;
+  font-size:24px;
+}
+
+#questText{
+  margin:0;
+  color:#61737d;
+  line-height:1.5;
+}
+
+.mainButton{
+  margin-top:13px;
+  padding:12px 24px;
+  border:0;
+  border-radius:15px;
+  background:linear-gradient(90deg,#ff9950,#ffd34e);
+  color:#49331f;
+  font-weight:900;
+  cursor:pointer;
+}
+
+
+/* ================================
+   DIALOG
+================================ */
+
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(15,48,65,.48);
+  backdrop-filter:blur(6px);
+}
+
+.dialog{
+  position:relative;
+  width:min(620px,100%);
+  max-height:90vh;
+  overflow:auto;
+  padding:32px;
+  border-radius:30px;
+  background:white;
+  box-shadow:0 35px 100px rgba(10,40,55,.45);
+  text-align:center;
+}
+
+.dialogSheep{
+  font-size:70px;
+}
+
+.dialog h2{
+  margin:8px 0;
+  font-size:29px;
+}
+
+.dialogText{
+  color:#5d707a;
+  line-height:1.6;
+}
+
+.close{
+  position:absolute;
+  right:15px;
+  top:13px;
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:50%;
+  background:#edf5f7;
+  font-size:26px;
+  cursor:pointer;
+}
+
+.choices{
+  display:grid;
+  gap:11px;
+  margin-top:20px;
+}
+
+.choice{
+  width:100%;
+  padding:15px;
+  border:2px solid #dce8ec;
+  border-radius:16px;
+  background:#f8fbfc;
+  text-align:left;
+  font-size:14px;
+  cursor:pointer;
+  transition:.15s;
+}
+
+.choice:hover{
+  transform:translateY(-2px);
+  border-color:#ffae52;
+  background:#fff7ed;
+}
+
+
+/* ================================
+   HELP
+================================ */
+
+.help{
+  text-align:left;
+}
+
+.help h2{
+  text-align:center;
+}
+
+.help p{
+  color:#5c707b;
+  line-height:1.65;
+}
+
+
+/* ================================
+   MOBILE
+================================ */
+
+#mobileControls{
+  position:fixed;
+  inset:0;
+  z-index:70;
+  pointer-events:none;
+}
+
+#joystick{
+  position:absolute;
+  left:22px;
+  bottom:25px;
+  width:135px;
+  height:135px;
+  border:3px solid rgba(255,255,255,.6);
+  border-radius:50%;
+  background:rgba(255,255,255,.2);
+  pointer-events:auto;
+}
+
+#stick{
+  position:absolute;
+  left:37px;
+  top:37px;
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:rgba(255,255,255,.9);
+  box-shadow:0 8px 20px rgba(0,0,0,.18);
+}
+
+#lookText{
+  position:absolute;
+  right:20px;
+  bottom:30px;
+  padding:10px 14px;
+  border-radius:12px;
+  color:white;
+  background:rgba(20,55,70,.45);
+  font-size:10px;
+  font-weight:bold;
+  letter-spacing:1px;
+}
+
+@media(max-width:700px){
+
+  #hud{
+    top:7px;
+    left:7px;
+    right:7px;
+    gap:4px;
+  }
+
+  .brand{
+    padding:6px 8px;
+  }
+
+  .brandIcon{
+    font-size:23px;
+  }
+
+  .brandTitle{
+    font-size:11px;
+  }
+
+  .brandSub{
+    font-size:8px;
+  }
+
+  .stats{
+    gap:3px;
+  }
+
+  .stat{
+    padding:7px 8px;
+    font-size:10px;
+  }
+
+  .helpButton{
+    width:37px;
+    height:37px;
+  }
+
+  #quest{
+    bottom:9px;
+    padding:16px;
+  }
+
+  #questTitle{
+    font-size:19px;
+  }
+
+  #questText{
+    font-size:13px;
+  }
+
+  #interactPrompt{
+    bottom:145px;
+  }
+}
+</style>
 </head>
 
 <body>
 
-  <!-- =========================
-       LOADING SCREEN
-  ========================== -->
-  <div id="loading">
 
-    <div class="loader-card">
+<!-- ==========================================
+     LOADING SCREEN
+=========================================== -->
 
-      <div class="wool">
-        🐑
-      </div>
+<div id="loading">
 
-      <h1>Cuddly Sheep</h1>
+  <div class="loader">
 
-      <p>
-        Building Kindness Kingdom...
-      </p>
-
-      <div class="bar">
-        <i></i>
-      </div>
-
+    <div class="loaderSheep">
+      🐑
     </div>
 
-  </div>
+    <h1>
+      Cuddly Sheep
+    </h1>
 
-
-  <!-- =========================
-       MAIN GAME HUD
-  ========================== -->
-
-  <div id="hud" class="hidden">
-
-    <!-- BRAND -->
-    <div class="brand">
-
-      <span class="mini-sheep">
-        🐑
-      </span>
-
-      <div>
-        <b>
-          Kindness Kingdom
-        </b>
-
-        <small>
-          Cuddly Sheep
-        </small>
-      </div>
-
-    </div>
-
-
-    <!-- GAME STATS -->
-
-    <div class="stats">
-
-      <div class="pill">
-        Kindness
-        <strong id="kindness">
-          0
-        </strong>
-      </div>
-
-      <div class="pill">
-        Stars
-        <strong id="stars">
-          0
-        </strong>
-      </div>
-
-      <div class="pill">
-        Mission
-        <strong id="mission">
-          1/5
-        </strong>
-      </div>
-
-    </div>
-
-
-    <!-- HELP -->
-
-    <button
-      id="helpBtn"
-      class="round"
-      aria-label="Help">
-
-      ?
-
-    </button>
-
-  </div>
-
-
-  <!-- =========================
-       CROSSHAIR
-  ========================== -->
-
-  <div id="crosshair" class="hidden"></div>
-
-
-  <!-- =========================
-       QUEST CARD
-  ========================== -->
-
-  <div id="missionCard" class="hidden">
-
-    <span class="mission-tag">
-      KINDNESS QUEST
-    </span>
-
-    <h2 id="missionTitle">
-      Welcome to the meadow
-    </h2>
-
-    <p id="missionText">
-      Explore the kingdom and help friends deal
-      with unkind messages.
+    <p>
+      Entering Kindness Kingdom...
     </p>
 
-    <button id="missionAction">
-      Start quest
+    <div class="loadingTrack">
+      <div class="loadingBar"></div>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ==========================================
+     HUD
+=========================================== -->
+
+<div id="hud" class="hidden">
+
+  <div class="brand">
+
+    <div class="brandIcon">
+      🐑
+    </div>
+
+    <div>
+      <div class="brandTitle">
+        Kindness Kingdom
+      </div>
+
+      <span class="brandSub">
+        Cuddly Sheep
+      </span>
+    </div>
+
+  </div>
+
+
+  <div class="stats">
+
+    <div class="stat">
+      Kindness:
+      <b id="kindness">
+        0
+      </b>
+    </div>
+
+    <div class="stat">
+      Stars:
+      <b id="stars">
+        0
+      </b>
+    </div>
+
+    <div class="stat">
+      Quest:
+      <b id="questNumber">
+        1/5
+      </b>
+    </div>
+
+  </div>
+
+
+  <button
+    id="helpButton"
+    class="helpButton">
+    ?
+  </button>
+
+</div>
+
+
+<!-- ==========================================
+     CROSSHAIR
+=========================================== -->
+
+<div
+  id="crosshair"
+  class="hidden">
+</div>
+
+
+<!-- ==========================================
+     INTERACTION PROMPT
+=========================================== -->
+
+<div
+  id="interactPrompt"
+  class="hidden">
+
+  Click to talk to your sheep friend
+
+</div>
+
+
+<!-- ==========================================
+     QUEST
+=========================================== -->
+
+<div
+  id="quest"
+  class="hidden">
+
+  <div class="questLabel">
+    KINDNESS QUEST
+  </div>
+
+  <h2 id="questTitle">
+    Welcome to Kindness Kingdom
+  </h2>
+
+  <p id="questText">
+    Explore the meadow and find your first sheep friend.
+  </p>
+
+  <button
+    id="questButton"
+    class="mainButton">
+
+    Start quest
+
+  </button>
+
+</div>
+
+
+<!-- ==========================================
+     DIALOG
+=========================================== -->
+
+<div
+  id="dialogOverlay"
+  class="overlay hidden">
+
+  <div class="dialog">
+
+    <button
+      id="closeDialog"
+      class="close">
+      ×
+    </button>
+
+    <div
+      id="dialogSheep"
+      class="dialogSheep">
+      🐑
+    </div>
+
+    <h2 id="dialogName">
+      Sheep
+    </h2>
+
+    <p
+      id="dialogText"
+      class="dialogText">
+    </p>
+
+    <div
+      id="choices"
+      class="choices">
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ==========================================
+     HELP
+=========================================== -->
+
+<div
+  id="helpOverlay"
+  class="overlay hidden">
+
+  <div class="dialog help">
+
+    <button
+      id="closeHelp"
+      class="close">
+      ×
+    </button>
+
+    <h2>
+      How to play
+    </h2>
+
+    <p>
+      <b>WASD / Arrow keys</b>
+      — walk around Kindness Kingdom.
+    </p>
+
+    <p>
+      <b>Mouse drag</b>
+      — look around.
+    </p>
+
+    <p>
+      <b>Click</b>
+      — interact with sheep.
+    </p>
+
+    <p>
+      <b>Mobile</b>
+      — use the joystick and drag the screen
+      to look around.
+    </p>
+
+    <p>
+      Find the five sheep friends and help them
+      respond safely to different cyberbullying
+      situations.
+    </p>
+
+    <p>
+      The game encourages players to consider
+      listening, blocking, reporting, saving evidence
+      and talking to a trusted adult when appropriate.
+    </p>
+
+    <button
+      id="resumeButton"
+      class="mainButton">
+
+      Return to Kingdom
+
     </button>
 
   </div>
 
-
-  <!-- =========================
-       SHEEP DIALOG
-  ========================== -->
-
-  <div id="dialog" class="hidden">
-
-    <div class="dialog-box">
-
-      <button
-        id="closeDialog"
-        class="close"
-        aria-label="Close">
-
-        ×
-
-      </button>
+</div>
 
 
-      <div
-        id="dialogIcon"
-        class="dialog-icon">
+<!-- ==========================================
+     MOBILE CONTROLS
+=========================================== -->
 
-        🐑
+<div
+  id="mobileControls"
+  class="hidden">
 
-      </div>
-
-
-      <h2 id="dialogTitle">
-        Friend
-      </h2>
-
-
-      <p id="dialogText">
-        A sheep needs your help.
-      </p>
-
-
-      <div
-        id="dialogChoices"
-        class="choices">
-      </div>
-
-    </div>
-
+  <div id="joystick">
+    <div id="stick"></div>
   </div>
 
-
-  <!-- =========================
-       HELP WINDOW
-  ========================== -->
-
-  <div id="help" class="hidden">
-
-    <div class="help-box">
-
-      <button
-        id="closeHelp"
-        class="close"
-        aria-label="Close">
-
-        ×
-
-      </button>
-
-
-      <h2>
-        How to play
-      </h2>
-
-
-      <p>
-        <b>Desktop:</b>
-        Use WASD or the arrow keys to walk.
-        Drag the mouse to look around.
-        Click when you want to interact.
-      </p>
-
-
-      <p>
-        <b>Touch:</b>
-        Use the on-screen joystick to walk.
-        Drag the right side of the screen to look.
-      </p>
-
-
-      <p>
-        Find the glowing sheep around Kindness
-        Kingdom and complete five kindness challenges.
-      </p>
-
-
-      <p>
-        When cyberbullying happens, think about
-        staying safe, keeping evidence, blocking or
-        reporting harmful behaviour, and talking to
-        a trusted adult when appropriate.
-      </p>
-
-
-      <button id="resume">
-        Back to kingdom
-      </button>
-
-    </div>
-
+  <div id="lookText">
+    DRAG TO LOOK
   </div>
 
-
-  <!-- =========================
-       MOBILE CONTROLS
-  ========================== -->
-
-  <div id="touch" class="hidden">
-
-    <!-- JOYSTICK -->
-
-    <div id="joystick">
-
-      <div id="stick"></div>
-
-    </div>
+</div>
 
 
-    <!-- LOOK MESSAGE -->
+<script type="module">
 
-    <div id="lookHint">
-      DRAG TO LOOK
-    </div>
+/* =========================================================
+   THREE.JS
+========================================================= */
 
-  </div>
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
 
 
-  <!-- =========================
-       GAME ENGINE
-  ========================== -->
+/* =========================================================
+   SCENE
+========================================================= */
 
-  <script type="module" src="game.js"></script>
+const scene =
+  new THREE.Scene();
+
+scene.background =
+  new THREE.Color(
+    0x82d9ff
+  );
+
+scene.fog =
+  new THREE.Fog(
+    0x82d9ff,
+    35,
+    130
+  );
+
+
+/* =========================================================
+   CAMERA
+========================================================= */
+
+const camera =
+  new THREE.PerspectiveCamera(
+    65,
+    innerWidth / innerHeight,
+    .1,
+    250
+  );
+
+
+camera.position.set(
+  0,
+  5,
+  12
+);
+
+
+/* =========================================================
+   RENDERER
+========================================================= */
+
+const renderer =
+  new THREE.WebGLRenderer({
+    antialias:true
+  });
+
+
+renderer.setPixelRatio(
+  Math.min(
+    devicePixelRatio,
+    2
+  )
+);
+
+
+renderer.setSize(
+  innerWidth,
+  innerHeight
+);
+
+
+renderer.shadowMap.enabled =
+  true;
+
+
+renderer.shadowMap.type =
+  THREE.PCFSoftShadowMap;
+
+
+renderer.outputColorSpace =
+  THREE.SRGBColorSpace;
+
+
+document.body.prepend(
+  renderer.domElement
+);
+
+
+/* =========================================================
+   LIGHTS
+========================================================= */
+
+const skyLight =
+  new THREE.HemisphereLight(
+    0xd4f5ff,
+    0x4f843e,
+    2.4
+  );
+
+scene.add(
+  skyLight
+);
+
+
+const sun =
+  new THREE.DirectionalLight(
+    0xffffff,
+    3.4
+  );
+
+sun.position.set(
+  -35,
+  45,
+  20
+);
+
+sun.castShadow =
+  true;
+
+sun.shadow.mapSize.set(
+  2048,
+  2048
+);
+
+scene.add(
+  sun
+);
+
+
+/* =========================================================
+   MATERIALS
+========================================================= */
+
+function mat(
+  color,
+  roughness = 1
+){
+
+  return new THREE.MeshStandardMaterial({
+    color:color,
+    roughness:roughness
+  });
+
+}
+
+
+const GRASS =
+  mat(0x64bd5e);
+
+const PATH =
+  mat(0xdca06a);
+
+const WOOD =
+  mat(0x93603c);
+
+const LEAVES =
+  mat(0x3eaa59);
+
+const WOOL =
+  mat(0xfffaf0);
+
+const SHEEP_FACE =
+  mat(0x3c4852);
+
+const CASTLE =
+  mat(0xffc45d);
+
+const ROOF =
+  mat(0xff8251);
+
+const WATER =
+  mat(0x45c7ef);
+
+
+/* =========================================================
+   OBJECT HELPERS
+========================================================= */
+
+function cube(
+  w,
+  h,
+  d,
+  material,
+  x,
+  y,
+  z
+){
+
+  const object =
+    new THREE.Mesh(
+      new THREE.BoxGeometry(
+        w,
+        h,
+        d
+      ),
+      material
+    );
+
+  object.position.set(
+    x,
+    y,
+    z
+  );
+
+  object.castShadow =
+    true;
+
+  object.receiveShadow =
+    true;
+
+  scene.add(
+    object
+  );
+
+  return object;
+
+}
+
+
+function ball(
+  radius,
+  material,
+  x,
+  y,
+  z
+){
+
+  const object =
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        radius,
+        20,
+        16
+      ),
+      material
+    );
+
+  object.position.set(
+    x,
+    y,
+    z
+  );
+
+  object.castShadow =
+    true;
+
+  object.receiveShadow =
+    true;
+
+  scene.add(
+    object
+  );
+
+  return object;
+
+}
+
+
+function column(
+  radius,
+  height,
+  material,
+  x,
+  y,
+  z
+){
+
+  const object =
+    new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        radius,
+        radius,
+        height,
+        20
+      ),
+      material
+    );
+
+  object.position.set(
+    x,
+    y,
+    z
+  );
+
+  object.castShadow =
+    true;
+
+  scene.add(
+    object
+  );
+
+  return object;
+
+}
+
+
+/* =========================================================
+   GROUND
+========================================================= */
+
+cube(
+  180,
+  .5,
+  180,
+  GRASS,
+  0,
+  -.25,
+  0
+);
+
+
+/* =========================================================
+   PATH SYSTEM
+========================================================= */
+
+function makePath(
+  x,
+  z,
+  width,
+  depth
+){
+
+  cube(
+    width,
+    .05,
+    depth,
+    PATH,
+    x,
+    .02,
+    z
+  );
+
+}
+
+
+makePath(
+  0,
+  0,
+  9,
+  170
+);
+
+makePath(
+  0,
+  0,
+  170,
+  9
+);
+
+makePath(
+  -35,
+  -30,
+  65,
+  5
+);
+
+makePath(
+  35,
+  30,
+  65,
+  5
+);
+
+
+/* =========================================================
+   RIVER
+========================================================= */
+
+cube(
+  150,
+  .08,
+  12,
+  WATER,
+  0,
+  .02,
+  48
+);
+
+
+/* =========================================================
+   TREES
+========================================================= */
+
+function makeTree(
+  x,
+  z,
+  scale=1
+){
+
+  column(
+    .4 * scale,
+    2.7 * scale,
+    WOOD,
+    x,
+    1.35 * scale,
+    z
+  );
+
+
+  ball(
+    1.8 * scale,
+    LEAVES,
+    x,
+    3.1 * scale,
+    z
+  );
+
+
+  ball(
+    1.35 * scale,
+    LEAVES,
+    x + scale,
+    2.8 * scale,
+    z + .3 * scale
+  );
+
+
+  ball(
+    1.35 * scale,
+    LEAVES,
+    x - scale,
+    2.8 * scale,
+    z - .2 * scale
+  );
+
+}
+
+
+for(
+  let i=0;
+  i<65;
+  i++
+){
+
+  const x =
+    (Math.random()-.5)*155;
+
+  const z =
+    (Math.random()-.5)*155;
+
+
+  if(
+    Math.abs(x)<12 ||
+    Math.abs(z)<12
+  ){
+
+    continue;
+
+  }
+
+
+  makeTree(
+    x,
+    z,
+    .65 +
+    Math.random()*.55
+  );
+
+}
+
+
+/* =========================================================
+   FLOWERS
+========================================================= */
+
+const flowerColours=[
+  0xff7598,
+  0xffdb4e,
+  0xa77cff,
+  0xffffff
+];
+
+
+function flower(
+  x,
+  z,
+  colour
+){
+
+  column(
+    .035,
+    .35,
+    LEAVES,
+    x,
+    .2,
+    z
+  );
+
+
+  ball(
+    .14,
+    mat(colour),
+    x,
+    .42,
+    z
+  );
+
+
+  for(
+    let i=0;
+    i<5;
+    i++
+  ){
+
+    const angle =
+      i*Math.PI*2/5;
+
+
+    ball(
+      .075,
+      mat(colour),
+      x +
+      Math.cos(angle)*.13,
+      .42,
+      z +
+      Math.sin(angle)*.13
+    );
+
+  }
+
+}
+
+
+for(
+  let i=0;
+  i<150;
+  i++
+){
+
+  flower(
+    (Math.random()-.5)*140,
+    (Math.random()-.5)*140,
+    flowerColours[
+      i%flowerColours.length
+    ]
+  );
+
+}
+
+
+/* =========================================================
+   SHEEP
+========================================================= */
+
+function createSheep(
+  x,
+  z,
+  scale=1,
+  bodyColour=0xfffaf0
+){
+
+  const sheep =
+    new THREE.Group();
+
+
+  sheep.position.set(
+    x,
+    0,
+    z
+  );
+
+
+  sheep.scale.setScalar(
+    scale
+  );
+
+
+  /* BODY */
+
+  const body =
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        1.35,
+        28,
+        20
+      ),
+      mat(bodyColour)
+    );
+
+
+  body.scale.set(
+    1.35,
+    .9,
+    .95
+  );
+
+
+  body.position.y =
+    1.65;
+
+
+  body.castShadow =
+    true;
+
+
+  sheep.add(
+    body
+  );
+
+
+  /* WOOL PUFFS */
+
+  for(
+    let i=0;
+    i<11;
+    i++
+  ){
+
+    const a =
+      i*Math.PI*2/11;
+
+
+    const puff =
+      new THREE.Mesh(
+        new THREE.SphereGeometry(
+          .52,
+          18,
+          14
+        ),
+        WOOL
+      );
+
+
+    puff.position.set(
+      Math.cos(a)*1.12,
+      1.8+
+      Math.sin(a)*.4,
+      Math.sin(a)*.72
+    );
+
+
+    puff.castShadow =
+      true;
+
+
+    sheep.add(
+      puff
+    );
+
+  }
+
+
+  /* HEAD */
+
+  const head =
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        .68,
+        22,
+        18
+      ),
+      SHEEP_FACE
+    );
+
+
+  head.position.set(
+    0,
+    1.65,
+    1.35
+  );
+
+
+  head.scale.set(
+    .9,
+    1,
+    .8
+  );
+
+
+  sheep.add(
+    head
+  );
+
+
+  /* MUZZLE */
+
+  const muzzle =
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        .42,
+        18,
+        14
+      ),
+      mat(0x68747c)
+    );
+
+
+  muzzle.position.set(
+    0,
+    1.58,
+    1.82
+  );
+
+
+  sheep.add(
+    muzzle
+  );
+
+
+  /* EYES */
+
+  [-.23,.23].forEach(
+    eyeX=>{
+
+      const eye =
+        new THREE.Mesh(
+          new THREE.SphereGeometry(
+            .08,
+            14,
+            12
+          ),
+          mat(0xffffff)
+        );
+
+
+      eye.position.set(
+        eyeX,
+        1.9,
+        2.05
+      );
+
+
+      sheep.add(
+        eye
+      );
+
+    }
+  );
+
+
+  /* EARS */
+
+  [-.55,.55].forEach(
+    earX=>{
+
+      const ear =
+        new THREE.Mesh(
+          new THREE.SphereGeometry(
+            .25,
+            15,
+            12
+          ),
+          SHEEP_FACE
+        );
+
+
+      ear.scale.set(
+        1,
+        .45,
+        1
+      );
+
+
+      ear.position.set(
+        earX,
+        1.95,
+        1.4
+      );
+
+
+      ear.rotation.z =
+        earX>0
+        ? -.3
+        : .3;
+
+
+      sheep.add(
+        ear
+      );
+
+    }
+  );
+
+
+  /* LEGS */
+
+  [-.65,.65].forEach(
+    legX=>{
+
+      const leg =
+        new THREE.Mesh(
+          new THREE.CylinderGeometry(
+            .13,
+            .13,
+            .8,
+            12
+          ),
+          SHEEP_FACE
+        );
+
+
+      leg.position.set(
+        legX,
+        .65,
+        .25
+      );
+
+
+      leg.castShadow =
+        true;
+
+
+      sheep.add(
+        leg
+      );
+
+    }
+  );
+
+
+  scene.add(
+    sheep
+  );
+
+
+  return sheep;
+
+}
+
+
+/* =========================================================
+   PLAYER
+========================================================= */
+
+const player =
+  createSheep(
+    0,
+    10,
+    1.15
+  );
+
+
+player.name =
+  "PLAYER";
+
+
+/* =========================================================
+   NPC SHEEP
+========================================================= */
+
+const friends=[
+
+  {
+    x:-15,
+    z:-15,
+    name:"Milly",
+    icon:"🐑",
+    problem:
+      "Someone posted a really hurtful comment about my wool online."
+  },
+
+  {
+    x:20,
+    z:-10,
+    name:"Pip",
+    icon:"🐏",
+    problem:
+      "A group chat keeps sending me nasty messages."
+  },
+
+  {
+    x:-24,
+    z:20,
+    name:"Cloud",
+    icon:"🐑",
+    problem:
+      "Someone shared a picture of me without asking."
+  },
+
+  {
+    x:30,
+    z:22,
+    name:"Daisy",
+    icon:"🐑",
+    problem:
+      "I saw another sheep being deliberately left out."
+  },
+
+  {
+    x:0,
+    z:-38,
+    name:"Baailey",
+    icon:"🐏",
+    problem:
+      "My friend wants to send a really mean reply back."
+  }
+
+];
+
+
+friends.forEach(
+  (friend,index)=>{
+
+    friend.mesh =
+      createSheep(
+        friend.x,
+        friend.z,
+        1,
+        [
+          0xfff3d8,
+          0xf5f5ff,
+          0xffead5,
+          0xf3edff,
+          0xfffaf0
+        ][index]
+      );
+
+
+    friend.mesh.userData.friend =
+      friend;
+
+  }
+);
+
+
+/* =========================================================
+   CASTLE
+========================================================= */
+
+const castle =
+  new THREE.Group();
+
+
+castle.position.set(
+  0,
+  0,
+  -65
+);
+
+
+scene.add(
+  castle
+);
+
+
+const castleBody =
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      18,
+      8,
+      5
+    ),
+    CASTLE
+  );
+
+
+castleBody.position.y =
+  4;
+
+
+castleBody.castShadow =
+  true;
+
+
+castle.add(
+  castleBody
+);
+
+
+/* TOWERS */
+
+[-7,7].forEach(
+  towerX=>{
+
+    const tower =
+      new THREE.Mesh(
+        new THREE.CylinderGeometry(
+          2.2,
+          2.2,
+          12,
+          24
+        ),
+        ROOF
+      );
+
+
+    tower.position.set(
+      towerX,
+      6,
+      0
+    );
+
+
+    tower.castShadow =
+      true;
+
+
+    castle.add(
+      tower
+    );
+
+
+    const roof =
+      new THREE.Mesh(
+        new THREE.ConeGeometry(
+          2.8,
+          3,
+          24
+        ),
+        ROOF
+      );
+
+
+    roof.position.set(
+      towerX,
+      13.5,
+      0
+    );
+
+
+    castle.add(
+      roof
+    );
+
+  }
+);
+
+
+/* CASTLE DOOR */
+
+const door =
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      4,
+      5,
+      1
+    ),
+    mat(0x6cb7dd)
+  );
+
+
+door.position.set(
+  0,
+  2.5,
+  -3
+);
+
+
+castle.add(
+  door
+);
+
+
+/* HEART */
+
+const heartShape =
+  new THREE.Shape();
+
+heartShape.moveTo(
+  0,
+  -.8
+);
+
+heartShape.bezierCurveTo(
+  -1.4,
+  -1.9,
+  -2.4,
+  .2,
+  0,
+  1.3
+);
+
+heartShape.bezierCurveTo(
+  2.4,
+  .2,
+  1.4,
+  -1.9,
+  0,
+  -.8
+);
+
+
+const heart =
+  new THREE.Mesh(
+    new THREE.ShapeGeometry(
+      heartShape
+    ),
+    mat(0xff7894)
+  );
+
+
+heart.rotation.x =
+  -Math.PI/2;
+
+
+heart.position.set(
+  0,
+  8,
+  -3.1
+);
+
+
+heart.scale.setScalar(
+  1.1
+);
+
+
+castle.add(
+  heart
+);
+
+
+/* =========================================================
+   GAME STATE
+========================================================= */
+
+const keys={};
+
+let yaw=0;
+let pitch=-.18;
+
+let kindness=0;
+let stars=0;
+
+let currentQuest=0;
+
+let nearbyFriend=null;
+
+let mouseDragging=false;
+
+let previousX=0;
+let previousY=0;
+
+
+/* =========================================================
+   QUEST DATA
+========================================================= */
+
+const quests=[
+
+  {
+    title:"Find Milly",
+    text:
+      "Milly has received a hurtful comment. Walk over and listen to her."
+  },
+
+  {
+    title:"Help Pip",
+    text:
+      "Pip is receiving repeated nasty messages in a group chat."
+  },
+
+  {
+    title:"Help Cloud",
+    text:
+      "Cloud's picture was shared without permission."
+  },
+
+  {
+    title:"Help Daisy",
+    text:
+      "Daisy saw another sheep being deliberately excluded."
+  },
+
+  {
+    title:"Help Baailey",
+    text:
+      "Baailey wants to send an angry message back."
+  }
+
+];
+
+
+/* =========================================================
+   HUD UPDATE
+========================================================= */
+
+function updateHUD(){
+
+  document.getElementById(
+    "kindness"
+  ).textContent=
+    kindness;
+
+
+  document.getElementById(
+    "stars"
+  ).textContent=
+    stars;
+
+
+  document.getElementById(
+    "questNumber"
+  ).textContent=
+    `${Math.min(
+      currentQuest+1,
+      quests.length
+    )}/5`;
+
+}
+
+
+/* =========================================================
+   QUEST PANEL
+========================================================= */
+
+function updateQuest(){
+
+  if(
+    currentQuest>=quests.length
+  ){
+
+    document.getElementById(
+      "questTitle"
+    ).textContent=
+      "Kindness Kingdom complete!";
+
+
+    document.getElementById(
+      "questText"
+    ).textContent=
+      "You helped every sheep friend. Explore the kingdom and keep spreading kindness.";
+
+
+    document.getElementById(
+      "questButton"
+    ).textContent=
+      "Explore";
+
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    "questTitle"
+  ).textContent=
+    quests[currentQuest].title;
+
+
+  document.getElementById(
+    "questText"
+  ).textContent=
+    quests[currentQuest].text;
+
+}
+
+
+document.getElementById(
+  "questButton"
+).onclick=()=>{
+
+  document.getElementById(
+    "quest"
+  ).classList.add(
+    "hidden"
+  );
+
+};
+
+
+/* =========================================================
+   DIALOG
+========================================================= */
+
+function talkToFriend(
+  friend
+){
+
+  nearbyFriend=null;
+
+  document.getElementById(
+    "dialogSheep"
+  ).textContent=
+    friend.icon;
+
+
+  document.getElementById(
+    "dialogName"
+  ).textContent=
+    friend.name;
+
+
+  document.getElementById(
+    "dialogText"
+  ).textContent=
+    friend.problem;
+
+
+  const choices =
+    document.getElementById(
+      "choices"
+    );
+
+
+  choices.innerHTML="";
+
+
+  const answers=[
+
+    {
+      text:
+        "Listen, keep evidence, block/report the behaviour, and tell a trusted adult.",
+      good:true
+    },
+
+    {
+      text:
+        "Send an even nastier message back.",
+      good:false
+    },
+
+    {
+      text:
+        "Share the message with lots of people.",
+      good:false
+    },
+
+    {
+      text:
+        "Pretend nothing happened.",
+      good:false
+    }
+
+  ];
+
+
+  answers.forEach(
+    answer=>{
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.className=
+        "choice";
+
+
+      button.textContent=
+        answer.text;
+
+
+      button.onclick=()=>{
+
+        if(
+          answer.good
+        ){
+
+          kindness+=20;
+          stars++;
+
+
+          if(
+            friend.mesh
+          ){
+
+            friend.mesh.visible=
+              false;
+
+          }
+
+
+          currentQuest=
+            Math.min(
+              currentQuest+1,
+              quests.length
+            );
+
+
+          document.getElementById(
+            "dialogOverlay"
+          ).classList.add(
+            "hidden"
+          );
+
+
+          updateHUD();
+          updateQuest();
+
+
+          if(
+            currentQuest<
+            quests.length
+          ){
+
+            document.getElementById(
+              "quest"
+            ).classList.remove(
+              "hidden"
+            );
+
+          }
+
+        }
+        else{
+
+          document.getElementById(
+            "dialogText"
+          ).textContent=
+            "That response could make the situation worse. Try a choice that focuses on safety and getting support.";
+
+        }
+
+      };
+
+
+      choices.appendChild(
+        button
+      );
+
+    }
+  );
+
+
+  document.getElementById(
+    "dialogOverlay"
+  ).classList.remove(
+    "hidden"
+  );
+
+}
+
+
+/* =========================================================
+   CLOSE DIALOG
+========================================================= */
+
+document.getElementById(
+  "closeDialog"
+).onclick=()=>{
+
+  document.getElementById(
+    "dialogOverlay"
+  ).classList.add(
+    "hidden"
+  );
+
+};
+
+
+/* =========================================================
+   HELP
+========================================================= */
+
+document.getElementById(
+  "helpButton"
+).onclick=()=>{
+
+  document.getElementById(
+    "helpOverlay"
+  ).classList.remove(
+    "hidden"
+  );
+
+};
+
+
+document.getElementById(
+  "closeHelp"
+).onclick=()=>{
+
+  document.getElementById(
+    "helpOverlay"
+  ).classList.add(
+    "hidden"
+  );
+
+};
+
+
+document.getElementById(
+  "resumeButton"
+).onclick=()=>{
+
+  document.getElementById(
+    "helpOverlay"
+  ).classList.add(
+    "hidden"
+  );
+
+};
+
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+addEventListener(
+  "keydown",
+  event=>{
+
+    keys[
+      event.key.toLowerCase()
+    ]=true;
+
+
+    if(
+      event.key.toLowerCase()==="e"
+    ){
+
+      if(
+        nearbyFriend
+      ){
+
+        talkToFriend(
+          nearbyFriend
+        );
+
+      }
+
+    }
+
+  }
+);
+
+
+addEventListener(
+  "keyup",
+  event=>{
+
+    keys[
+      event.key.toLowerCase()
+    ]=false;
+
+  }
+);
+
+
+/* =========================================================
+   MOUSE LOOK
+========================================================= */
+
+renderer.domElement.addEventListener(
+  "pointerdown",
+  event=>{
+
+    mouseDragging=true;
+
+    previousX=
+      event.clientX;
+
+    previousY=
+      event.clientY;
+
+  }
+);
+
+
+renderer.domElement.addEventListener(
+  "pointerup",
+  ()=>{
+
+    mouseDragging=false;
+
+  }
+);
+
+
+renderer.domElement.addEventListener(
+  "pointermove",
+  event=>{
+
+    if(
+      !mouseDragging
+    ){
+
+      return;
+
+    }
+
+
+    const dx=
+      event.clientX-
+      previousX;
+
+
+    const dy=
+      event.clientY-
+      previousY;
+
+
+    previousX=
+      event.clientX;
+
+
+    previousY=
+      event.clientY;
+
+
+    yaw-=
+      dx*.004;
+
+
+    pitch-=
+      dy*.003;
+
+
+    pitch=
+      THREE.MathUtils.clamp(
+        pitch,
+        -.8,
+        .55
+      );
+
+  }
+);
+
+
+/* =========================================================
+   MOBILE JOYSTICK
+========================================================= */
+
+const joystick =
+  document.getElementById(
+    "joystick"
+  );
+
+
+const stick =
+  document.getElementById(
+    "stick"
+  );
+
+
+const mobile={
+  x:0,
+  y:0
+};
+
+
+function moveJoystick(
+  event
+){
+
+  const rect=
+    joystick.getBoundingClientRect();
+
+
+  const centerX=
+    rect.left+
+    rect.width/2;
+
+
+  const centerY=
+    rect.top+
+    rect.height/2;
+
+
+  let dx=
+    event.clientX-
+    centerX;
+
+
+  let dy=
+    event.clientY-
+    centerY;
+
+
+  const distance=
+    Math.hypot(
+      dx,
+      dy
+    );
+
+
+  const max=45;
+
+
+  if(
+    distance>max
+  ){
+
+    dx=
+      dx/distance*max;
+
+    dy=
+      dy/distance*max;
+
+  }
+
+
+  mobile.x=
+    dx/max;
+
+
+  mobile.y=
+    dy/max;
+
+
+  stick.style.transform=
+    `translate(${dx}px,${dy}px)`;
+
+}
+
+
+joystick.addEventListener(
+  "pointerdown",
+  event=>{
+
+    joystick.setPointerCapture(
+      event.pointerId
+    );
+
+    moveJoystick(
+      event
+    );
+
+  }
+);
+
+
+joystick.addEventListener(
+  "pointermove",
+  event=>{
+
+    moveJoystick(
+      event
+    );
+
+  }
+);
+
+
+joystick.addEventListener(
+  "pointerup",
+  ()=>{
+
+    mobile.x=0;
+    mobile.y=0;
+
+    stick.style.transform=
+      "translate(0,0)";
+
+  }
+);
+
+
+/* =========================================================
+   MOBILE CAMERA
+========================================================= */
+
+let touchLook=false;
+
+let touchX=0;
+let touchY=0;
+
+
+renderer.domElement.addEventListener(
+  "pointerdown",
+  event=>{
+
+    if(
+      event.clientX>
+      innerWidth*.45
+    ){
+
+      touchLook=true;
+
+      touchX=
+        event.clientX;
+
+      touchY=
+        event.clientY;
+
+    }
+
+  }
+);
+
+
+renderer.domElement.addEventListener(
+  "pointermove",
+  event=>{
+
+    if(
+      !touchLook
+    ){
+
+      return;
+
+    }
+
+
+    const dx=
+      event.clientX-
+      touchX;
+
+
+    const dy=
+      event.clientY-
+      touchY;
+
+
+    touchX=
+      event.clientX;
+
+
+    touchY=
+      event.clientY;
+
+
+    yaw-=
+      dx*.004;
+
+
+    pitch-=
+      dy*.003;
+
+
+    pitch=
+      THREE.MathUtils.clamp(
+        pitch,
+        -.8,
+        .55
+      );
+
+  }
+);
+
+
+renderer.domElement.addEventListener(
+  "pointerup",
+  ()=>{
+
+    touchLook=false;
+
+  }
+);
+
+
+/* =========================================================
+   FIND NEAREST FRIEND
+========================================================= */
+
+function checkNearby(){
+
+  let nearest=null;
+  let distance=Infinity;
+
+
+  friends.forEach(
+    friend=>{
+
+      if(
+        !friend.mesh.visible
+      ){
+
+        return;
+
+      }
+
+
+      const d=
+        player.position.distanceTo(
+          friend.mesh.position
+        );
+
+
+      if(
+        d<distance
+      ){
+
+        distance=d;
+        nearest=friend;
+
+      }
+
+    }
+  );
+
+
+  if(
+    nearest &&
+    distance<5
+  ){
+
+    nearbyFriend=
+      nearest;
+
+
+    document.getElementById(
+      "interactPrompt"
+    ).textContent=
+      `Talk to ${nearest.name} — press E or click`;
+
+
+    document.getElementById(
+      "interactPrompt"
+    ).classList.remove(
+      "hidden"
+    );
+
+  }
+  else{
+
+    nearbyFriend=null;
+
+
+    document.getElementById(
+      "interactPrompt"
+    ).classList.add(
+      "hidden"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CLICK TO TALK
+========================================================= */
+
+renderer.domElement.addEventListener(
+  "click",
+  event=>{
+
+    if(
+      nearbyFriend
+    ){
+
+      talkToFriend(
+        nearbyFriend
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+let previousTime=
+  performance.now();
+
+
+function animate(
+  currentTime
+){
+
+  requestAnimationFrame(
+    animate
+  );
+
+
+  const delta=
+    Math.min(
+      .04,
+      (currentTime-
+      previousTime)/1000
+    );
+
+
+  previousTime=
+    currentTime;
+
+
+  /* MOVEMENT */
+
+  let forwardInput=0;
+  let sideInput=0;
+
+
+  if(
+    keys.w ||
+    keys.arrowup
+  ){
+
+    forwardInput-=1;
+
+  }
+
+
+  if(
+    keys.s ||
+    keys.arrowdown
+  ){
+
+    forwardInput+=1;
+
+  }
+
+
+  if(
+    keys.a ||
+    keys.arrowleft
+  ){
+
+    sideInput-=1;
+
+  }
+
+
+  if(
+    keys.d ||
+    keys.arrowright
+  ){
+
+    sideInput+=1;
+
+  }
+
+
+  forwardInput+=
+    mobile.y;
+
+
+  sideInput+=
+    mobile.x;
+
+
+  const inputLength=
+    Math.hypot(
+      forwardInput,
+      sideInput
+    );
+
+
+  if(
+    inputLength>1
+  ){
+
+    forwardInput/=
+      inputLength;
+
+    sideInput/=
+      inputLength;
+
+  }
+
+
+  /* DIRECTION */
+
+  const forward=
+    new THREE.Vector3(
+      Math.sin(yaw),
+      0,
+      Math.cos(yaw)
+    );
+
+
+  const right=
+    new THREE.Vector3(
+      Math.cos(yaw),
+      0,
+      -Math.sin(yaw)
+    );
+
+
+  const speed=
+    8;
+
+
+  player.position.addScaledVector(
+    forward,
+    forwardInput*
+    speed*
+    delta
+  );
+
+
+  player.position.addScaledVector(
+    right,
+    sideInput*
+    speed*
+    delta
+  );
+
+
+  /* BOUNDARY */
+
+  player.position.x=
+    THREE.MathUtils.clamp(
+      player.position.x,
+      -80,
+      80
+    );
+
+
+  player.position.z=
+    THREE.MathUtils.clamp(
+      player.position.z,
+      -80,
+      80
+    );
+
+
+  /* SHEEP ROTATION */
+
+  if(
+    inputLength>.05
+  ){
+
+    player.rotation.y=
+      yaw+
+      Math.PI;
+
+  }
+
+
+  /* CUDDLY BOUNCE */
+
+  player.position.y=
+    Math.sin(
+      currentTime*.006
+    )*.035;
+
+
+  /* CAMERA */
+
+  const target=
+    player.position.clone();
+
+
+  target.y+=2.5;
+
+
+  const desiredCamera=
+    player.position.clone();
+
+
+  desiredCamera.x+=
+    Math.sin(yaw)*7;
+
+
+  desiredCamera.y+=
+    4.3;
+
+
+  desiredCamera.z+=
+    Math.cos(yaw)*7;
+
+
+  camera.position.lerp(
+    desiredCamera,
+    .1
+  );
+
+
+  camera.lookAt(
+    target
+  );
+
+
+  /* NPC ANIMATION */
+
+  friends.forEach(
+    friend=>{
+
+      if(
+        !friend.mesh.visible
+      ){
+
+        return;
+
+      }
+
+
+      friend.mesh.position.y=
+        Math.sin(
+          currentTime*.002+
+          friend.x
+        )*.035;
+
+
+      friend.mesh.rotation.y=
+        Math.sin(
+          currentTime*.001+
+          friend.z
+        )*.06;
+
+    }
+  );
+
+
+  checkNearby();
+
+
+  /* CASTLE HEART ANIMATION */
+
+  heart.rotation.z=
+    Math.sin(
+      currentTime*.0015
+    )*.05;
+
+
+  heart.scale.setScalar(
+    1.05+
+    Math.sin(
+      currentTime*.003
+    )*.05
+  );
+
+
+  renderer.render(
+    scene,
+    camera
+  );
+
+}
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+addEventListener(
+  "resize",
+  ()=>{
+
+    camera.aspect=
+      innerWidth/
+      innerHeight;
+
+
+    camera.updateProjectionMatrix();
+
+
+    renderer.setSize(
+      innerWidth,
+      innerHeight
+    );
+
+  }
+);
+
+
+/* =========================================================
+   START
+========================================================= */
+
+setTimeout(
+  ()=>{
+
+    document.getElementById(
+      "loading"
+    ).classList.add(
+      "hidden"
+    );
+
+
+    document.getElementById(
+      "hud"
+    ).classList.remove(
+      "hidden"
+    );
+
+
+    document.getElementById(
+      "crosshair"
+    ).classList.remove(
+      "hidden"
+    );
+
+
+    document.getElementById(
+      "quest"
+    ).classList.remove(
+      "hidden"
+    );
+
+
+    if(
+      "ontouchstart" in window
+    ){
+
+      document.getElementById(
+        "mobileControls"
+      ).classList.remove(
+        "hidden"
+      );
+
+    }
+
+
+    updateHUD();
+    updateQuest();
+
+  },
+  2100
+);
+
+
+/* START GAME */
+
+animate(
+  performance.now()
+);
+
+</script>
 
 </body>
 </html>
