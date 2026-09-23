@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Cuddly Sheep — Kindness Kingdom</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>SheepSafe — The Friendship Adventure</title>
 
 <style>
 *{
   box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
 }
 
 html,body{
@@ -16,463 +17,482 @@ html,body{
   height:100%;
   overflow:hidden;
   font-family:Arial,Helvetica,sans-serif;
-  background:#78d4ff;
-  color:#203847;
+  background:#79d9ff;
+}
+
+body{
   touch-action:none;
 }
 
 canvas{
+  display:block;
+}
+
+#loading{
   position:fixed;
   inset:0;
-  width:100%;
+  z-index:1000;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:
+    radial-gradient(circle at 20% 20%,#fff 0 5%,transparent 6%),
+    linear-gradient(135deg,#ffdb45,#ff9f32,#ff664d,#7b74ff);
+  color:#151515;
+  transition:.5s;
+}
+
+#loading h1{
+  font-size:52px;
+  margin:0 0 10px;
+  text-align:center;
+}
+
+#loading p{
+  font-size:18px;
+  font-weight:bold;
+}
+
+.loader{
+  width:220px;
+  height:14px;
+  border-radius:20px;
+  background:#ffffff66;
+  overflow:hidden;
+  margin-top:20px;
+}
+
+.loader div{
+  width:0%;
   height:100%;
-  display:block;
+  background:#fff;
+  border-radius:20px;
+  transition:.2s;
+}
+
+#hud{
+  position:fixed;
+  z-index:20;
+  top:15px;
+  left:15px;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  pointer-events:none;
+}
+
+.card{
+  background:#fffffff2;
+  border:3px solid #151515;
+  border-radius:18px;
+  padding:10px 15px;
+  box-shadow:0 5px 0 #151515;
+}
+
+#gameTitle{
+  font-size:19px;
+  font-weight:900;
+}
+
+#levelText{
+  font-weight:800;
+}
+
+#kindness{
+  width:210px;
+  height:17px;
+  border:3px solid #151515;
+  border-radius:20px;
+  overflow:hidden;
+  background:#ddd;
+}
+
+#kindnessFill{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#ffd21f,#ff8a25,#ff4e4e);
+  transition:.4s;
+}
+
+#quest{
+  position:fixed;
+  z-index:20;
+  right:15px;
+  top:15px;
+  width:300px;
+  max-width:calc(100vw - 30px);
+  pointer-events:none;
+}
+
+#quest h3{
+  margin:0 0 5px;
+}
+
+#questText{
+  line-height:1.35;
+}
+
+#stars{
+  font-size:20px;
+  font-weight:900;
+}
+
+#prompt{
+  position:fixed;
+  z-index:25;
+  left:50%;
+  bottom:32px;
+  transform:translateX(-50%);
+  background:#fff;
+  color:#111;
+  border:3px solid #111;
+  border-radius:16px;
+  padding:12px 22px;
+  font-weight:900;
+  box-shadow:0 5px 0 #111;
+  display:none;
+  pointer-events:none;
+}
+
+#dialogue{
+  position:fixed;
+  z-index:100;
+  left:50%;
+  bottom:25px;
+  transform:translateX(-50%);
+  width:min(760px,calc(100vw - 30px));
+  background:#fffffffa;
+  border:4px solid #111;
+  border-radius:25px;
+  padding:20px;
+  box-shadow:0 9px 0 #111;
+  display:none;
+}
+
+#dialogueTop{
+  display:flex;
+  gap:15px;
+  align-items:center;
+}
+
+#npcFace{
+  width:70px;
+  height:70px;
+  flex:none;
+  border:3px solid #111;
+  border-radius:50%;
+  background:#ddd;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:36px;
+}
+
+#npcName{
+  font-size:23px;
+  font-weight:900;
+}
+
+#npcProblem{
+  margin-top:5px;
+  font-size:16px;
+  line-height:1.35;
+}
+
+#answers{
+  display:grid;
+  gap:9px;
+  margin-top:15px;
+}
+
+.answer{
+  border:3px solid #111;
+  background:#fff;
+  border-radius:14px;
+  padding:12px;
+  text-align:left;
+  font-size:15px;
+  font-weight:800;
+  cursor:pointer;
+  transition:.15s;
+}
+
+.answer:hover{
+  transform:translateY(-2px);
+  background:#fff1a7;
+}
+
+.answer.selected{
+  background:#ffce3b;
+  transform:scale(1.01);
+}
+
+#send{
+  width:100%;
+  margin-top:13px;
+  padding:13px;
+  border:3px solid #111;
+  border-radius:15px;
+  background:linear-gradient(90deg,#ffcf31,#ff8734);
+  font-weight:900;
+  font-size:17px;
+  cursor:pointer;
+}
+
+#send:disabled{
+  opacity:.45;
+}
+
+#feedback{
+  margin-top:12px;
+  padding:12px;
+  border-radius:14px;
+  display:none;
+  font-weight:800;
+  line-height:1.35;
+}
+
+#feedback.good{
+  background:#c8ffd6;
+  border:3px solid #218b45;
+}
+
+#feedback.bad{
+  background:#ffd0d0;
+  border:3px solid #b33;
+}
+
+#nextBtn{
+  display:none;
+  margin-top:10px;
+  width:100%;
+  padding:12px;
+  border:3px solid #111;
+  border-radius:14px;
+  background:#72d8ff;
+  font-weight:900;
+  cursor:pointer;
+}
+
+#startScreen,
+#levelComplete,
+#certificate{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  background:linear-gradient(135deg,#ffdd4a,#ff9a35,#ff655c,#7777ff);
+}
+
+.modal{
+  width:min(700px,100%);
+  max-height:90vh;
+  overflow:auto;
+  background:#fffffff4;
+  border:5px solid #111;
+  border-radius:30px;
+  padding:35px;
+  box-shadow:0 12px 0 #111;
+  text-align:center;
+}
+
+.modal h1{
+  margin:0 0 8px;
+  font-size:42px;
+}
+
+.modal h2{
+  font-size:30px;
+}
+
+.modal p{
+  font-size:17px;
+  line-height:1.5;
+}
+
+.bigButton{
+  border:4px solid #111;
+  border-radius:18px;
+  padding:15px 30px;
+  background:linear-gradient(90deg,#ffcc2e,#ff8535);
+  font-size:19px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 5px 0 #111;
+  margin:8px;
+}
+
+#certificate{
+  display:none;
+}
+
+.certificatePaper{
+  width:min(850px,100%);
+  background:#fff;
+  border:10px double #222;
+  padding:45px;
+  text-align:center;
+  box-shadow:0 15px 0 #111;
+  max-height:90vh;
+  overflow:auto;
+}
+
+.certificatePaper h1{
+  font-family:Georgia,serif;
+  font-size:48px;
+  margin:0;
+}
+
+.certificatePaper h2{
+  font-size:34px;
+  margin:15px 0;
+}
+
+.certificatePaper .line{
+  height:3px;
+  background:#111;
+  margin:20px 0;
+}
+
+#certificateName{
+  font-size:28px;
+  font-weight:900;
+  margin:20px;
+}
+
+#mobileControls{
+  position:fixed;
+  z-index:30;
+  inset:0;
+  pointer-events:none;
+}
+
+#joystick{
+  position:absolute;
+  left:20px;
+  bottom:20px;
+  width:145px;
+  height:145px;
+  border:4px solid #ffffffaa;
+  background:#1114;
+  border-radius:50%;
+  pointer-events:auto;
+}
+
+#stick{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:60px;
+  height:60px;
+  transform:translate(-50%,-50%);
+  background:#ffffffbb;
+  border:3px solid #111;
+  border-radius:50%;
+}
+
+.mobileBtn{
+  position:absolute;
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  border:4px solid #111;
+  background:#ffffffdd;
+  font-weight:900;
+  pointer-events:auto;
+  box-shadow:0 4px 0 #111;
+}
+
+#jumpBtn{
+  right:28px;
+  bottom:35px;
+}
+
+#talkBtn{
+  right:110px;
+  bottom:110px;
+}
+
+#lookInfo{
+  position:absolute;
+  right:15px;
+  bottom:15px;
+  background:#ffffffcc;
+  border:2px solid #111;
+  padding:7px 10px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:bold;
 }
 
 .hidden{
   display:none!important;
 }
 
-/* ================================
-   LOADING
-================================ */
-
-#loading{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:
-    linear-gradient(
-      145deg,
-      #53c9ff 0%,
-      #8be4ff 28%,
-      #ffe05c 65%,
-      #ff9a55 100%
-    );
-}
-
-.loader{
-  width:min(430px,90%);
-  padding:40px;
-  border-radius:34px;
-  text-align:center;
-  background:rgba(255,255,255,.94);
-  box-shadow:0 30px 100px rgba(25,65,85,.35);
-}
-
-.loaderSheep{
-  font-size:90px;
-  animation:bounceSheep 1s ease-in-out infinite alternate;
-}
-
-.loader h1{
-  margin:8px 0;
-  font-size:36px;
-}
-
-.loader p{
-  color:#617581;
-}
-
-.loadingTrack{
-  height:13px;
-  overflow:hidden;
-  border-radius:30px;
-  background:#e2edf1;
-  margin-top:25px;
-}
-
-.loadingBar{
-  width:0;
-  height:100%;
-  border-radius:30px;
-  background:linear-gradient(
-    90deg,
-    #ff884d,
-    #ffd34e,
-    #66d99b
-  );
-  animation:loadGame 2s forwards;
-}
-
-@keyframes loadGame{
-  to{width:100%}
-}
-
-@keyframes bounceSheep{
-  from{
-    transform:translateY(0) rotate(-3deg);
-  }
-  to{
-    transform:translateY(-12px) rotate(3deg);
-  }
-}
-
-
-/* ================================
-   HUD
-================================ */
-
-#hud{
-  position:fixed;
-  z-index:100;
-  left:16px;
-  right:16px;
-  top:15px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  pointer-events:none;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:9px 14px;
-  border:2px solid rgba(255,255,255,.85);
-  border-radius:18px;
-  background:rgba(255,255,255,.9);
-  box-shadow:0 8px 30px rgba(20,65,80,.2);
-}
-
-.brandIcon{
-  font-size:30px;
-}
-
-.brandTitle{
-  font-weight:900;
-  font-size:15px;
-}
-
-.brandSub{
-  display:block;
-  margin-top:2px;
-  color:#657985;
-  font-size:11px;
-}
-
-.stats{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-}
-
-.stat{
-  padding:10px 13px;
-  border:2px solid rgba(255,255,255,.85);
-  border-radius:16px;
-  background:rgba(255,255,255,.9);
-  box-shadow:0 8px 30px rgba(20,65,80,.2);
-  font-size:13px;
-}
-
-.stat b{
-  color:#ec733c;
-}
-
-.helpButton{
-  margin-left:auto;
-  width:44px;
-  height:44px;
-  border:2px solid white;
-  border-radius:50%;
-  background:rgba(255,255,255,.94);
-  font-size:20px;
-  font-weight:bold;
-  cursor:pointer;
-  pointer-events:auto;
-}
-
-
-/* ================================
-   CROSSHAIR
-================================ */
-
-#crosshair{
-  position:fixed;
-  z-index:80;
-  left:50%;
-  top:50%;
-  width:10px;
-  height:10px;
-  transform:translate(-50%,-50%);
-  border:2px solid white;
-  border-radius:50%;
-  box-shadow:0 0 10px #000;
-}
-
-
-/* ================================
-   INTERACTION PROMPT
-================================ */
-
-#interactPrompt{
-  position:fixed;
-  z-index:90;
-  left:50%;
-  bottom:125px;
-  transform:translateX(-50%);
-  padding:12px 20px;
-  border-radius:18px;
-  color:#273d48;
-  background:rgba(255,255,255,.94);
-  box-shadow:0 10px 35px rgba(20,60,75,.25);
-  font-weight:800;
-  text-align:center;
-}
-
-
-/* ================================
-   QUEST PANEL
-================================ */
-
-#quest{
-  position:fixed;
-  z-index:95;
-  left:50%;
-  bottom:20px;
-  transform:translateX(-50%);
-  width:min(650px,calc(100% - 28px));
-  padding:21px 24px;
-  border-radius:26px;
-  background:rgba(255,255,255,.95);
-  box-shadow:0 20px 60px rgba(25,60,75,.3);
-  text-align:center;
-}
-
-.questLabel{
-  color:#ef7540;
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:2px;
-}
-
-#questTitle{
-  margin:7px 0;
-  font-size:24px;
-}
-
-#questText{
-  margin:0;
-  color:#61737d;
-  line-height:1.5;
-}
-
-.mainButton{
-  margin-top:13px;
-  padding:12px 24px;
-  border:0;
-  border-radius:15px;
-  background:linear-gradient(90deg,#ff9950,#ffd34e);
-  color:#49331f;
-  font-weight:900;
-  cursor:pointer;
-}
-
-
-/* ================================
-   DIALOG
-================================ */
-
-.overlay{
-  position:fixed;
-  inset:0;
-  z-index:500;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  background:rgba(15,48,65,.48);
-  backdrop-filter:blur(6px);
-}
-
-.dialog{
-  position:relative;
-  width:min(620px,100%);
-  max-height:90vh;
-  overflow:auto;
-  padding:32px;
-  border-radius:30px;
-  background:white;
-  box-shadow:0 35px 100px rgba(10,40,55,.45);
-  text-align:center;
-}
-
-.dialogSheep{
-  font-size:70px;
-}
-
-.dialog h2{
-  margin:8px 0;
-  font-size:29px;
-}
-
-.dialogText{
-  color:#5d707a;
-  line-height:1.6;
-}
-
-.close{
-  position:absolute;
-  right:15px;
-  top:13px;
-  width:40px;
-  height:40px;
-  border:0;
-  border-radius:50%;
-  background:#edf5f7;
-  font-size:26px;
-  cursor:pointer;
-}
-
-.choices{
-  display:grid;
-  gap:11px;
-  margin-top:20px;
-}
-
-.choice{
-  width:100%;
-  padding:15px;
-  border:2px solid #dce8ec;
-  border-radius:16px;
-  background:#f8fbfc;
-  text-align:left;
-  font-size:14px;
-  cursor:pointer;
-  transition:.15s;
-}
-
-.choice:hover{
-  transform:translateY(-2px);
-  border-color:#ffae52;
-  background:#fff7ed;
-}
-
-
-/* ================================
-   HELP
-================================ */
-
-.help{
-  text-align:left;
-}
-
-.help h2{
-  text-align:center;
-}
-
-.help p{
-  color:#5c707b;
-  line-height:1.65;
-}
-
-
-/* ================================
-   MOBILE
-================================ */
-
-#mobileControls{
-  position:fixed;
-  inset:0;
-  z-index:70;
-  pointer-events:none;
-}
-
-#joystick{
-  position:absolute;
-  left:22px;
-  bottom:25px;
-  width:135px;
-  height:135px;
-  border:3px solid rgba(255,255,255,.6);
-  border-radius:50%;
-  background:rgba(255,255,255,.2);
-  pointer-events:auto;
-}
-
-#stick{
-  position:absolute;
-  left:37px;
-  top:37px;
-  width:58px;
-  height:58px;
-  border-radius:50%;
-  background:rgba(255,255,255,.9);
-  box-shadow:0 8px 20px rgba(0,0,0,.18);
-}
-
-#lookText{
-  position:absolute;
-  right:20px;
-  bottom:30px;
-  padding:10px 14px;
-  border-radius:12px;
-  color:white;
-  background:rgba(20,55,70,.45);
-  font-size:10px;
-  font-weight:bold;
-  letter-spacing:1px;
-}
-
 @media(max-width:700px){
+  #quest{
+    top:120px;
+    right:10px;
+    width:245px;
+  }
 
   #hud{
-    top:7px;
-    left:7px;
-    right:7px;
-    gap:4px;
+    top:10px;
+    left:10px;
   }
 
-  .brand{
-    padding:6px 8px;
+  .card{
+    padding:7px 10px;
   }
 
-  .brandIcon{
-    font-size:23px;
+  #gameTitle{
+    font-size:15px;
   }
 
-  .brandTitle{
-    font-size:11px;
+  #kindness{
+    width:150px;
   }
 
-  .brandSub{
-    font-size:8px;
+  #dialogue{
+    bottom:10px;
+    padding:13px;
+    max-height:62vh;
+    overflow:auto;
   }
 
-  .stats{
-    gap:3px;
+  #npcFace{
+    width:52px;
+    height:52px;
+    font-size:27px;
   }
 
-  .stat{
-    padding:7px 8px;
-    font-size:10px;
+  #npcName{
+    font-size:18px;
   }
 
-  .helpButton{
-    width:37px;
-    height:37px;
-  }
-
-  #quest{
-    bottom:9px;
-    padding:16px;
-  }
-
-  #questTitle{
-    font-size:19px;
-  }
-
-  #questText{
+  .answer{
+    padding:9px;
     font-size:13px;
   }
 
-  #interactPrompt{
-    bottom:145px;
+  .modal{
+    padding:22px;
+  }
+
+  .modal h1{
+    font-size:31px;
+  }
+
+  .certificatePaper{
+    padding:22px;
+  }
+
+  .certificatePaper h1{
+    font-size:35px;
   }
 }
 </style>
@@ -480,2492 +500,2588 @@ canvas{
 
 <body>
 
-
-<!-- ==========================================
-     LOADING SCREEN
-=========================================== -->
-
 <div id="loading">
-
-  <div class="loader">
-
-    <div class="loaderSheep">
-      🐑
-    </div>
-
-    <h1>
-      Cuddly Sheep
-    </h1>
-
-    <p>
-      Entering Kindness Kingdom...
-    </p>
-
-    <div class="loadingTrack">
-      <div class="loadingBar"></div>
-    </div>
-
-  </div>
-
+  <h1>SheepSafe</h1>
+  <p>Loading the friendship adventure...</p>
+  <div class="loader"><div id="loadBar"></div></div>
 </div>
 
+<div id="startScreen">
+  <div class="modal">
+    <h1>SheepSafe</h1>
+    <h2>The Friendship Adventure</h2>
+    <p>
+      Explore a colourful 3D world, meet sheep who are having difficult
+      online experiences and learn how to respond safely and kindly.
+    </p>
+    <p>
+      <b>WASD / Arrow Keys</b> — Move<br>
+      <b>Space</b> — Jump<br>
+      <b>E</b> — Talk<br>
+      <b>Mouse drag</b> — Look around
+    </p>
+    <button class="bigButton" id="startBtn">START ADVENTURE</button>
+  </div>
+</div>
 
-<!-- ==========================================
-     HUD
-=========================================== -->
+<div id="hud">
+  <div class="card" id="gameTitle">SheepSafe</div>
+  <div class="card" id="levelText">Level 1</div>
+  <div class="card">
+    <div>Friendship Meter</div>
+    <div id="kindness"><div id="kindnessFill"></div></div>
+  </div>
+  <div class="card" id="stars">Stars: 0</div>
+</div>
 
-<div id="hud" class="hidden">
+<div id="quest" class="card">
+  <h3>Current Mission</h3>
+  <div id="questText">Find the first sheep.</div>
+</div>
 
-  <div class="brand">
+<div id="prompt">Press E to talk</div>
 
-    <div class="brandIcon">
-      🐑
-    </div>
-
+<div id="dialogue">
+  <div id="dialogueTop">
+    <div id="npcFace">S</div>
     <div>
-      <div class="brandTitle">
-        Kindness Kingdom
-      </div>
-
-      <span class="brandSub">
-        Cuddly Sheep
-      </span>
+      <div id="npcName">Sheep</div>
+      <div id="npcProblem"></div>
     </div>
-
   </div>
 
+  <div id="answers"></div>
 
-  <div class="stats">
+  <button id="send" disabled>SEND RESPONSE</button>
 
-    <div class="stat">
-      Kindness:
-      <b id="kindness">
-        0
-      </b>
-    </div>
+  <div id="feedback"></div>
+  <button id="nextBtn">CONTINUE</button>
+</div>
 
-    <div class="stat">
-      Stars:
-      <b id="stars">
-        0
-      </b>
-    </div>
-
-    <div class="stat">
-      Quest:
-      <b id="questNumber">
-        1/5
-      </b>
-    </div>
-
+<div id="levelComplete">
+  <div class="modal">
+    <h1 id="completeTitle">Level Complete!</h1>
+    <h2 id="completeStars">Star earned!</h2>
+    <p id="completeText"></p>
+    <button class="bigButton" id="continueLevel">NEXT LEVEL</button>
   </div>
-
-
-  <button
-    id="helpButton"
-    class="helpButton">
-    ?
-  </button>
-
 </div>
 
+<div id="certificate">
+  <div class="certificatePaper">
+    <h1>ROHANS WEB</h1>
+    <div class="line"></div>
+    <h2>Certificate of Digital Friendship</h2>
 
-<!-- ==========================================
-     CROSSHAIR
-=========================================== -->
+    <p>This certificate is proudly presented to</p>
 
-<div
-  id="crosshair"
-  class="hidden">
-</div>
+    <div id="certificateName">SheepSafe Player</div>
 
+    <p>
+      for completing the SheepSafe Friendship Adventure
+      and learning about respectful, supportive and safe
+      behaviour online.
+    </p>
 
-<!-- ==========================================
-     INTERACTION PROMPT
-=========================================== -->
+    <div class="line"></div>
 
-<div
-  id="interactPrompt"
-  class="hidden">
+    <p><b>Levels completed:</b> <span id="certLevels">0</span></p>
+    <p><b>Stars collected:</b> <span id="certStars">0</span></p>
+    <p><b>Kindness points:</b> <span id="certPoints">0</span></p>
 
-  Click to talk to your sheep friend
+    <p style="margin-top:30px">
+      Created for the SheepSafe adventure<br>
+      <b>Rohans Web</b>
+    </p>
 
-</div>
-
-
-<!-- ==========================================
-     QUEST
-=========================================== -->
-
-<div
-  id="quest"
-  class="hidden">
-
-  <div class="questLabel">
-    KINDNESS QUEST
+    <button class="bigButton" onclick="window.print()">PRINT CERTIFICATE</button>
+    <button class="bigButton" id="restartBtn">PLAY AGAIN</button>
   </div>
-
-  <h2 id="questTitle">
-    Welcome to Kindness Kingdom
-  </h2>
-
-  <p id="questText">
-    Explore the meadow and find your first sheep friend.
-  </p>
-
-  <button
-    id="questButton"
-    class="mainButton">
-
-    Start quest
-
-  </button>
-
 </div>
 
-
-<!-- ==========================================
-     DIALOG
-=========================================== -->
-
-<div
-  id="dialogOverlay"
-  class="overlay hidden">
-
-  <div class="dialog">
-
-    <button
-      id="closeDialog"
-      class="close">
-      ×
-    </button>
-
-    <div
-      id="dialogSheep"
-      class="dialogSheep">
-      🐑
-    </div>
-
-    <h2 id="dialogName">
-      Sheep
-    </h2>
-
-    <p
-      id="dialogText"
-      class="dialogText">
-    </p>
-
-    <div
-      id="choices"
-      class="choices">
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- ==========================================
-     HELP
-=========================================== -->
-
-<div
-  id="helpOverlay"
-  class="overlay hidden">
-
-  <div class="dialog help">
-
-    <button
-      id="closeHelp"
-      class="close">
-      ×
-    </button>
-
-    <h2>
-      How to play
-    </h2>
-
-    <p>
-      <b>WASD / Arrow keys</b>
-      — walk around Kindness Kingdom.
-    </p>
-
-    <p>
-      <b>Mouse drag</b>
-      — look around.
-    </p>
-
-    <p>
-      <b>Click</b>
-      — interact with sheep.
-    </p>
-
-    <p>
-      <b>Mobile</b>
-      — use the joystick and drag the screen
-      to look around.
-    </p>
-
-    <p>
-      Find the five sheep friends and help them
-      respond safely to different cyberbullying
-      situations.
-    </p>
-
-    <p>
-      The game encourages players to consider
-      listening, blocking, reporting, saving evidence
-      and talking to a trusted adult when appropriate.
-    </p>
-
-    <button
-      id="resumeButton"
-      class="mainButton">
-
-      Return to Kingdom
-
-    </button>
-
-  </div>
-
-</div>
-
-
-<!-- ==========================================
-     MOBILE CONTROLS
-=========================================== -->
-
-<div
-  id="mobileControls"
-  class="hidden">
-
+<div id="mobileControls">
   <div id="joystick">
     <div id="stick"></div>
   </div>
 
-  <div id="lookText">
-    DRAG TO LOOK
-  </div>
+  <button class="mobileBtn" id="jumpBtn">JUMP</button>
+  <button class="mobileBtn" id="talkBtn">TALK</button>
 
+  <div id="lookInfo">Drag the world to look</div>
 </div>
 
-
 <script type="module">
-
-/* =========================================================
-   THREE.JS
-========================================================= */
 
 import * as THREE from
 "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
 
-
 /* =========================================================
-   SCENE
+   BASIC SETUP
 ========================================================= */
 
-const scene =
-  new THREE.Scene();
+const scene = new THREE.Scene();
 
-scene.background =
-  new THREE.Color(
-    0x82d9ff
+scene.background = new THREE.Color(0xffb23e);
+
+scene.fog = new THREE.Fog(
+  0xffb23e,
+  35,
+  150
+);
+
+const camera = new THREE.PerspectiveCamera(
+  65,
+  innerWidth / innerHeight,
+  .1,
+  400
+);
+
+camera.position.set(0,7,13);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias:true
+});
+
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+document.body.appendChild(renderer.domElement);
+
+/* =========================================================
+   AUDIO
+========================================================= */
+
+let audioCtx = null;
+
+function startAudio(){
+
+  if(!audioCtx){
+
+    audioCtx =
+      new (window.AudioContext ||
+      window.webkitAudioContext)();
+
+  }
+
+  if(audioCtx.state === "suspended"){
+    audioCtx.resume();
+  }
+}
+
+function sound(
+  frequency=500,
+  duration=.12,
+  type="sine",
+  volume=.06
+){
+
+  if(!audioCtx) return;
+
+  const osc =
+    audioCtx.createOscillator();
+
+  const gain =
+    audioCtx.createGain();
+
+  osc.type=type;
+  osc.frequency.value=frequency;
+
+  gain.gain.setValueAtTime(
+    volume,
+    audioCtx.currentTime
   );
 
-scene.fog =
-  new THREE.Fog(
-    0x82d9ff,
-    35,
-    130
+  gain.gain.exponentialRampToValueAtTime(
+    .001,
+    audioCtx.currentTime+duration
   );
 
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
 
-/* =========================================================
-   CAMERA
-========================================================= */
+  osc.start();
+  osc.stop(audioCtx.currentTime+duration);
+}
 
-const camera =
-  new THREE.PerspectiveCamera(
-    65,
-    innerWidth / innerHeight,
-    .1,
-    250
+function jumpSound(){
+  sound(420,.08,"sine",.07);
+  setTimeout(()=>sound(650,.1,"sine",.05),60);
+}
+
+function successSound(){
+
+  sound(523,.12,"sine",.07);
+
+  setTimeout(
+    ()=>sound(659,.12,"sine",.07),
+    100
   );
 
+  setTimeout(
+    ()=>sound(784,.22,"sine",.08),
+    200
+  );
+}
 
-camera.position.set(
-  0,
-  5,
-  12
-);
+function badSound(){
+  sound(180,.22,"sawtooth",.035);
+}
 
-
-/* =========================================================
-   RENDERER
-========================================================= */
-
-const renderer =
-  new THREE.WebGLRenderer({
-    antialias:true
-  });
-
-
-renderer.setPixelRatio(
-  Math.min(
-    devicePixelRatio,
-    2
-  )
-);
-
-
-renderer.setSize(
-  innerWidth,
-  innerHeight
-);
-
-
-renderer.shadowMap.enabled =
-  true;
-
-
-renderer.shadowMap.type =
-  THREE.PCFSoftShadowMap;
-
-
-renderer.outputColorSpace =
-  THREE.SRGBColorSpace;
-
-
-document.body.prepend(
-  renderer.domElement
-);
-
+function collectSound(){
+  sound(800,.08,"triangle",.05);
+  setTimeout(
+    ()=>sound(1100,.12,"triangle",.04),
+    70
+  );
+}
 
 /* =========================================================
-   LIGHTS
+   LIGHTING
 ========================================================= */
 
-const skyLight =
+const hemi =
   new THREE.HemisphereLight(
-    0xd4f5ff,
-    0x4f843e,
-    2.4
+    0xffffff,
+    0x8b682c,
+    2.2
   );
 
-scene.add(
-  skyLight
-);
-
+scene.add(hemi);
 
 const sun =
   new THREE.DirectionalLight(
     0xffffff,
-    3.4
+    3
   );
 
 sun.position.set(
-  -35,
-  45,
-  20
+  -40,
+  70,
+  30
 );
 
-sun.castShadow =
-  true;
+sun.castShadow=true;
 
-sun.shadow.mapSize.set(
-  2048,
-  2048
-);
+sun.shadow.mapSize.width=2048;
+sun.shadow.mapSize.height=2048;
 
-scene.add(
-  sun
-);
+sun.shadow.camera.left=-100;
+sun.shadow.camera.right=100;
+sun.shadow.camera.top=100;
+sun.shadow.camera.bottom=-100;
 
+scene.add(sun);
 
 /* =========================================================
    MATERIALS
 ========================================================= */
 
-function mat(
-  color,
-  roughness = 1
-){
+const mats={
 
-  return new THREE.MeshStandardMaterial({
-    color:color,
-    roughness:roughness
-  });
+  grass:new THREE.MeshStandardMaterial({
+    color:0x68c95c,
+    roughness:1
+  }),
 
-}
+  grass2:new THREE.MeshStandardMaterial({
+    color:0x83df68,
+    roughness:1
+  }),
 
+  path:new THREE.MeshStandardMaterial({
+    color:0xe6bd79
+  }),
 
-const GRASS =
-  mat(0x64bd5e);
+  water:new THREE.MeshStandardMaterial({
+    color:0x39bdf4,
+    roughness:.15,
+    metalness:.05
+  }),
 
-const PATH =
-  mat(0xdca06a);
+  wool:new THREE.MeshStandardMaterial({
+    color:0xf8f7ed,
+    roughness:1
+  }),
 
-const WOOD =
-  mat(0x93603c);
+  woolShadow:new THREE.MeshStandardMaterial({
+    color:0xe2e0d6,
+    roughness:1
+  }),
 
-const LEAVES =
-  mat(0x3eaa59);
+  skin:new THREE.MeshStandardMaterial({
+    color:0x5e4739,
+    roughness:1
+  }),
 
-const WOOL =
-  mat(0xfffaf0);
+  darkSkin:new THREE.MeshStandardMaterial({
+    color:0x3e2d27,
+    roughness:1
+  }),
 
-const SHEEP_FACE =
-  mat(0x3c4852);
+  pink:new THREE.MeshStandardMaterial({
+    color:0xff9caa
+  }),
 
-const CASTLE =
-  mat(0xffc45d);
+  wood:new THREE.MeshStandardMaterial({
+    color:0x9b5b32
+  }),
 
-const ROOF =
-  mat(0xff8251);
+  leaf:new THREE.MeshStandardMaterial({
+    color:0x38a85a
+  }),
 
-const WATER =
-  mat(0x45c7ef);
+  flower:new THREE.MeshStandardMaterial({
+    color:0xffe64b
+  }),
 
+  castle:new THREE.MeshStandardMaterial({
+    color:0xffdf8b
+  }),
+
+  roof:new THREE.MeshStandardMaterial({
+    color:0xf05a55
+  }),
+
+  stone:new THREE.MeshStandardMaterial({
+    color:0xb8a99a
+  }),
+
+  gold:new THREE.MeshStandardMaterial({
+    color:0xffd332,
+    metalness:.3,
+    roughness:.4
+  })
+
+};
 
 /* =========================================================
-   OBJECT HELPERS
+   WORLD
 ========================================================= */
 
-function cube(
-  w,
-  h,
-  d,
-  material,
-  x,
-  y,
-  z
+function box(
+  x,y,z,
+  sx,sy,sz,
+  material
 ){
 
-  const object =
+  const m =
     new THREE.Mesh(
       new THREE.BoxGeometry(
-        w,
-        h,
-        d
+        sx,sy,sz
       ),
       material
     );
 
-  object.position.set(
-    x,
-    y,
-    z
-  );
+  m.position.set(x,y,z);
 
-  object.castShadow =
-    true;
+  m.castShadow=true;
+  m.receiveShadow=true;
 
-  object.receiveShadow =
-    true;
+  scene.add(m);
 
-  scene.add(
-    object
-  );
-
-  return object;
-
+  return m;
 }
 
-
-function ball(
-  radius,
+function cylinder(
+  x,y,z,
+  r1,r2,h,
   material,
-  x,
-  y,
-  z
+  segments=16
 ){
 
-  const object =
+  const m =
+    new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        r1,r2,h,segments
+      ),
+      material
+    );
+
+  m.position.set(x,y,z);
+
+  m.castShadow=true;
+  m.receiveShadow=true;
+
+  scene.add(m);
+
+  return m;
+}
+
+function sphere(
+  x,y,z,
+  sx,sy,sz,
+  material
+){
+
+  const m =
     new THREE.Mesh(
       new THREE.SphereGeometry(
-        radius,
+        1,
         20,
         16
       ),
       material
     );
 
-  object.position.set(
-    x,
-    y,
-    z
-  );
+  m.position.set(x,y,z);
+  m.scale.set(sx,sy,sz);
 
-  object.castShadow =
-    true;
+  m.castShadow=true;
+  m.receiveShadow=true;
 
-  object.receiveShadow =
-    true;
+  scene.add(m);
 
-  scene.add(
-    object
-  );
-
-  return object;
-
+  return m;
 }
 
+/* Ground */
 
-function column(
-  radius,
-  height,
-  material,
-  x,
-  y,
-  z
-){
+box(
+  0,-.35,0,
+  180,.7,180,
+  mats.grass
+);
 
-  const object =
-    new THREE.Mesh(
-      new THREE.CylinderGeometry(
-        radius,
-        radius,
-        height,
-        20
-      ),
-      material
+/* Paths */
+
+box(
+  0,.015,0,
+  10,.08,180,
+  mats.path
+);
+
+box(
+  0,.02,-20,
+  180,.09,8,
+  mats.path
+);
+
+/* River */
+
+box(
+  0,.05,48,
+  180,.12,10,
+  mats.water
+);
+
+for(let i=0;i<35;i++){
+
+  const rock =
+    sphere(
+      -80+Math.random()*160,
+      .12,
+      43+Math.random()*10,
+      .6,
+      .25,
+      .9,
+      mats.stone
     );
 
-  object.position.set(
-    x,
-    y,
-    z
-  );
-
-  object.castShadow =
-    true;
-
-  scene.add(
-    object
-  );
-
-  return object;
-
 }
 
-
 /* =========================================================
-   GROUND
+   CLOUDS
 ========================================================= */
 
-cube(
-  180,
-  .5,
-  180,
-  GRASS,
-  0,
-  -.25,
-  0
-);
+const clouds=[];
 
+function createCloud(x,y,z,s){
 
-/* =========================================================
-   PATH SYSTEM
-========================================================= */
+  const g=new THREE.Group();
 
-function makePath(
-  x,
-  z,
-  width,
-  depth
-){
+  for(let i=0;i<7;i++){
 
-  cube(
-    width,
-    .05,
-    depth,
-    PATH,
-    x,
-    .02,
-    z
-  );
+    const c =
+      new THREE.Mesh(
+        new THREE.SphereGeometry(
+          1,
+          16,
+          12
+        ),
+        new THREE.MeshStandardMaterial({
+          color:0xffffff
+        })
+      );
 
+    c.position.set(
+      (i-3)*1.1,
+      Math.sin(i)*.35,
+      Math.random()*.5
+    );
+
+    c.scale.set(
+      1.6,
+      1,
+      1.2
+    );
+
+    g.add(c);
+
+  }
+
+  g.position.set(x,y,z);
+  g.scale.setScalar(s);
+
+  scene.add(g);
+
+  clouds.push(g);
 }
 
-
-makePath(
-  0,
-  0,
-  9,
-  170
-);
-
-makePath(
-  0,
-  0,
-  170,
-  9
-);
-
-makePath(
-  -35,
-  -30,
-  65,
-  5
-);
-
-makePath(
-  35,
-  30,
-  65,
-  5
-);
-
-
-/* =========================================================
-   RIVER
-========================================================= */
-
-cube(
-  150,
-  .08,
-  12,
-  WATER,
-  0,
-  .02,
-  48
-);
-
+createCloud(-35,35,-50,3);
+createCloud(35,40,-75,4);
+createCloud(0,30,-110,2.5);
+createCloud(55,33,20,3);
 
 /* =========================================================
    TREES
 ========================================================= */
 
-function makeTree(
-  x,
-  z,
-  scale=1
-){
+const obstacles=[];
 
-  column(
-    .4 * scale,
-    2.7 * scale,
-    WOOD,
-    x,
-    1.35 * scale,
-    z
-  );
+function createTree(x,z,s=1){
 
+  const g=new THREE.Group();
 
-  ball(
-    1.8 * scale,
-    LEAVES,
-    x,
-    3.1 * scale,
-    z
-  );
-
-
-  ball(
-    1.35 * scale,
-    LEAVES,
-    x + scale,
-    2.8 * scale,
-    z + .3 * scale
-  );
-
-
-  ball(
-    1.35 * scale,
-    LEAVES,
-    x - scale,
-    2.8 * scale,
-    z - .2 * scale
-  );
-
-}
-
-
-for(
-  let i=0;
-  i<65;
-  i++
-){
-
-  const x =
-    (Math.random()-.5)*155;
-
-  const z =
-    (Math.random()-.5)*155;
-
-
-  if(
-    Math.abs(x)<12 ||
-    Math.abs(z)<12
-  ){
-
-    continue;
-
-  }
-
-
-  makeTree(
-    x,
-    z,
-    .65 +
-    Math.random()*.55
-  );
-
-}
-
-
-/* =========================================================
-   FLOWERS
-========================================================= */
-
-const flowerColours=[
-  0xff7598,
-  0xffdb4e,
-  0xa77cff,
-  0xffffff
-];
-
-
-function flower(
-  x,
-  z,
-  colour
-){
-
-  column(
-    .035,
-    .35,
-    LEAVES,
-    x,
-    .2,
-    z
-  );
-
-
-  ball(
-    .14,
-    mat(colour),
-    x,
-    .42,
-    z
-  );
-
-
-  for(
-    let i=0;
-    i<5;
-    i++
-  ){
-
-    const angle =
-      i*Math.PI*2/5;
-
-
-    ball(
-      .075,
-      mat(colour),
-      x +
-      Math.cos(angle)*.13,
-      .42,
-      z +
-      Math.sin(angle)*.13
-    );
-
-  }
-
-}
-
-
-for(
-  let i=0;
-  i<150;
-  i++
-){
-
-  flower(
-    (Math.random()-.5)*140,
-    (Math.random()-.5)*140,
-    flowerColours[
-      i%flowerColours.length
-    ]
-  );
-
-}
-
-
-/* =========================================================
-   SHEEP
-========================================================= */
-
-function createSheep(
-  x,
-  z,
-  scale=1,
-  bodyColour=0xfffaf0
-){
-
-  const sheep =
-    new THREE.Group();
-
-
-  sheep.position.set(
-    x,
-    0,
-    z
-  );
-
-
-  sheep.scale.setScalar(
-    scale
-  );
-
-
-  /* BODY */
-
-  const body =
+  const trunk =
     new THREE.Mesh(
-      new THREE.SphereGeometry(
-        1.35,
-        28,
-        20
+      new THREE.CylinderGeometry(
+        .35*s,
+        .5*s,
+        3*s,
+        10
       ),
-      mat(bodyColour)
+      mats.wood
     );
 
+  trunk.position.y=1.5*s;
+  trunk.castShadow=true;
+  g.add(trunk);
 
-  body.scale.set(
-    1.35,
-    .9,
-    .95
-  );
+  for(let i=0;i<5;i++){
 
-
-  body.position.y =
-    1.65;
-
-
-  body.castShadow =
-    true;
-
-
-  sheep.add(
-    body
-  );
-
-
-  /* WOOL PUFFS */
-
-  for(
-    let i=0;
-    i<11;
-    i++
-  ){
-
-    const a =
-      i*Math.PI*2/11;
-
-
-    const puff =
+    const crown =
       new THREE.Mesh(
         new THREE.SphereGeometry(
-          .52,
-          18,
-          14
+          1.7*s,
+          14,
+          12
         ),
-        WOOL
+        mats.leaf
       );
 
-
-    puff.position.set(
-      Math.cos(a)*1.12,
-      1.8+
-      Math.sin(a)*.4,
-      Math.sin(a)*.72
+    crown.position.set(
+      (Math.random()-.5)*1.4*s,
+      (3.1+Math.random()*.9)*s,
+      (Math.random()-.5)*1.4*s
     );
 
+    crown.castShadow=true;
 
-    puff.castShadow =
-      true;
-
-
-    sheep.add(
-      puff
-    );
-
+    g.add(crown);
   }
 
+  g.position.set(x,0,z);
 
-  /* HEAD */
+  scene.add(g);
 
-  const head =
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        .68,
-        22,
-        18
-      ),
-      SHEEP_FACE
-    );
-
-
-  head.position.set(
-    0,
-    1.65,
-    1.35
-  );
-
-
-  head.scale.set(
-    .9,
-    1,
-    .8
-  );
-
-
-  sheep.add(
-    head
-  );
-
-
-  /* MUZZLE */
-
-  const muzzle =
-    new THREE.Mesh(
-      new THREE.SphereGeometry(
-        .42,
-        18,
-        14
-      ),
-      mat(0x68747c)
-    );
-
-
-  muzzle.position.set(
-    0,
-    1.58,
-    1.82
-  );
-
-
-  sheep.add(
-    muzzle
-  );
-
-
-  /* EYES */
-
-  [-.23,.23].forEach(
-    eyeX=>{
-
-      const eye =
-        new THREE.Mesh(
-          new THREE.SphereGeometry(
-            .08,
-            14,
-            12
-          ),
-          mat(0xffffff)
-        );
-
-
-      eye.position.set(
-        eyeX,
-        1.9,
-        2.05
-      );
-
-
-      sheep.add(
-        eye
-      );
-
-    }
-  );
-
-
-  /* EARS */
-
-  [-.55,.55].forEach(
-    earX=>{
-
-      const ear =
-        new THREE.Mesh(
-          new THREE.SphereGeometry(
-            .25,
-            15,
-            12
-          ),
-          SHEEP_FACE
-        );
-
-
-      ear.scale.set(
-        1,
-        .45,
-        1
-      );
-
-
-      ear.position.set(
-        earX,
-        1.95,
-        1.4
-      );
-
-
-      ear.rotation.z =
-        earX>0
-        ? -.3
-        : .3;
-
-
-      sheep.add(
-        ear
-      );
-
-    }
-  );
-
-
-  /* LEGS */
-
-  [-.65,.65].forEach(
-    legX=>{
-
-      const leg =
-        new THREE.Mesh(
-          new THREE.CylinderGeometry(
-            .13,
-            .13,
-            .8,
-            12
-          ),
-          SHEEP_FACE
-        );
-
-
-      leg.position.set(
-        legX,
-        .65,
-        .25
-      );
-
-
-      leg.castShadow =
-        true;
-
-
-      sheep.add(
-        leg
-      );
-
-    }
-  );
-
-
-  scene.add(
-    sheep
-  );
-
-
-  return sheep;
+  obstacles.push({
+    x,
+    z,
+    radius:2*s
+  });
 
 }
 
+for(let i=0;i<70;i++){
 
-/* =========================================================
-   PLAYER
-========================================================= */
+  const x=-75+Math.random()*150;
+  const z=-75+Math.random()*150;
 
-const player =
-  createSheep(
-    0,
-    10,
-    1.15
+  if(Math.abs(x)<9) continue;
+
+  if(Math.abs(z+20)<7) continue;
+
+  if(Math.abs(z-48)<7) continue;
+
+  createTree(
+    x,
+    z,
+    .7+Math.random()*.8
   );
 
+}
 
-player.name =
-  "PLAYER";
+/* Flowers */
 
+for(let i=0;i<220;i++){
 
-/* =========================================================
-   NPC SHEEP
-========================================================= */
+  const x=-78+Math.random()*156;
+  const z=-78+Math.random()*156;
 
-const friends=[
+  const g=new THREE.Group();
 
-  {
-    x:-15,
-    z:-15,
-    name:"Milly",
-    icon:"🐑",
-    problem:
-      "Someone posted a really hurtful comment about my wool online."
-  },
+  const stem=
+    new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        .035,.05,.45,6
+      ),
+      mats.leaf
+    );
 
-  {
-    x:20,
-    z:-10,
-    name:"Pip",
-    icon:"🐏",
-    problem:
-      "A group chat keeps sending me nasty messages."
-  },
+  stem.position.y=.22;
 
-  {
-    x:-24,
-    z:20,
-    name:"Cloud",
-    icon:"🐑",
-    problem:
-      "Someone shared a picture of me without asking."
-  },
+  g.add(stem);
 
-  {
-    x:30,
-    z:22,
-    name:"Daisy",
-    icon:"🐑",
-    problem:
-      "I saw another sheep being deliberately left out."
-  },
+  for(let j=0;j<5;j++){
 
-  {
-    x:0,
-    z:-38,
-    name:"Baailey",
-    icon:"🐏",
-    problem:
-      "My friend wants to send a really mean reply back."
-  }
-
-];
-
-
-friends.forEach(
-  (friend,index)=>{
-
-    friend.mesh =
-      createSheep(
-        friend.x,
-        friend.z,
-        1,
-        [
-          0xfff3d8,
-          0xf5f5ff,
-          0xffead5,
-          0xf3edff,
-          0xfffaf0
-        ][index]
+    const petal=
+      new THREE.Mesh(
+        new THREE.SphereGeometry(
+          .13,8,8
+        ),
+        new THREE.MeshStandardMaterial({
+          color:[
+            0xff5d76,
+            0xffff45,
+            0xb476ff,
+            0xff8f35
+          ][Math.floor(Math.random()*4)]
+        })
       );
 
+    petal.position.set(
+      Math.cos(j*1.25)*.16,
+      .5,
+      Math.sin(j*1.25)*.16
+    );
 
-    friend.mesh.userData.friend =
-      friend;
-
+    g.add(petal);
   }
-);
 
+  g.position.set(x,0,z);
+
+  scene.add(g);
+}
 
 /* =========================================================
    CASTLE
 ========================================================= */
 
-const castle =
-  new THREE.Group();
+function createCastle(){
 
+  const g=new THREE.Group();
 
-castle.position.set(
-  0,
-  0,
-  -65
-);
+  const main =
+    new THREE.Mesh(
+      new THREE.BoxGeometry(
+        28,13,14
+      ),
+      mats.castle
+    );
 
+  main.position.y=6.5;
+  main.castShadow=true;
+  g.add(main);
 
-scene.add(
-  castle
-);
+  const roof =
+    new THREE.Mesh(
+      new THREE.ConeGeometry(
+        11,7,4
+      ),
+      mats.roof
+    );
 
+  roof.rotation.y=Math.PI/4;
+  roof.position.y=16;
+  roof.castShadow=true;
 
-const castleBody =
-  new THREE.Mesh(
-    new THREE.BoxGeometry(
-      18,
-      8,
-      5
-    ),
-    CASTLE
-  );
+  g.add(roof);
 
-
-castleBody.position.y =
-  4;
-
-
-castleBody.castShadow =
-  true;
-
-
-castle.add(
-  castleBody
-);
-
-
-/* TOWERS */
-
-[-7,7].forEach(
-  towerX=>{
+  for(const x of [-13,13]){
 
     const tower =
       new THREE.Mesh(
         new THREE.CylinderGeometry(
-          2.2,
-          2.2,
-          12,
-          24
+          4,4,18,16
         ),
-        ROOF
+        mats.castle
       );
-
 
     tower.position.set(
-      towerX,
-      6,
+      x,
+      9,
       0
     );
 
+    tower.castShadow=true;
 
-    tower.castShadow =
-      true;
+    g.add(tower);
 
-
-    castle.add(
-      tower
-    );
-
-
-    const roof =
+    const tr =
       new THREE.Mesh(
         new THREE.ConeGeometry(
-          2.8,
-          3,
-          24
+          5.2,6,16
         ),
-        ROOF
+        mats.roof
       );
 
-
-    roof.position.set(
-      towerX,
-      13.5,
+    tr.position.set(
+      x,
+      21,
       0
     );
 
+    g.add(tr);
+  }
 
-    castle.add(
-      roof
+  const door =
+    new THREE.Mesh(
+      new THREE.BoxGeometry(
+        5,7,.5
+      ),
+      mats.wood
     );
 
+  door.position.set(
+    0,
+    3.5,
+    7.2
+  );
+
+  g.add(door);
+
+  g.position.set(
+    0,
+    0,
+    -65
+  );
+
+  scene.add(g);
+}
+
+createCastle();
+
+/* =========================================================
+   SHEEP MODEL
+========================================================= */
+
+function woolPuff(
+  group,
+  x,y,z,
+  scale=.8
+){
+
+  const p =
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        1,
+        16,
+        12
+      ),
+      mats.wool
+    );
+
+  p.position.set(x,y,z);
+  p.scale.setScalar(scale);
+
+  p.castShadow=true;
+
+  group.add(p);
+
+  return p;
+}
+
+function createSheep(
+  x,
+  z,
+  scale=1,
+  bodyColor=mats.wool
+){
+
+  const g=new THREE.Group();
+
+  g.userData={
+    originalY:0,
+    happy:false,
+    sad:true,
+    walking:false
+  };
+
+  /* Body */
+
+  const body=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        1.8,
+        24,
+        18
+      ),
+      bodyColor
+    );
+
+  body.scale.set(
+    1.55,
+    1.15,
+    1
+  );
+
+  body.position.y=2.25;
+
+  body.castShadow=true;
+
+  g.add(body);
+
+  /* Wool puffs */
+
+  const puffPositions=[
+    [-1.1,2.7,0],
+    [-.5,3.05,.15],
+    [0,3.15,0],
+    [.6,3,.15],
+    [1.15,2.65,0],
+    [-1.25,2.15,.45],
+    [1.2,2.15,.4],
+    [-.6,1.75,.3],
+    [.3,1.7,.3]
+  ];
+
+  puffPositions.forEach(
+    p=>woolPuff(
+      g,
+      p[0],p[1],p[2],
+      .55
+    )
+  );
+
+  /* Head */
+
+  const head=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        1,
+        20,
+        16
+      ),
+      mats.skin
+    );
+
+  head.scale.set(
+    .75,.95,.8
+  );
+
+  head.position.set(
+    1.65,
+    2.45,
+    0
+  );
+
+  head.castShadow=true;
+
+  g.add(head);
+
+  g.userData.head=head;
+
+  /* Muzzle */
+
+  const muzzle=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        1,
+        16,
+        12
+      ),
+      mats.pink
+    );
+
+  muzzle.scale.set(
+    .42,.32,.5
+  );
+
+  muzzle.position.set(
+    2.22,
+    2.15,
+    0
+  );
+
+  g.add(muzzle);
+
+  /* Eyes */
+
+  const eyeMat=
+    new THREE.MeshStandardMaterial({
+      color:0x151515
+    });
+
+  const eyeL=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        .13,12,8
+      ),
+      eyeMat
+    );
+
+  eyeL.position.set(
+    2.03,
+    2.75,
+    -.43
+  );
+
+  g.add(eyeL);
+
+  const eyeR=
+    eyeL.clone();
+
+  eyeR.position.z=.43;
+
+  g.add(eyeR);
+
+  g.userData.eyes=[
+    eyeL,
+    eyeR
+  ];
+
+  /* Ears */
+
+  const earMat=
+    new THREE.MeshStandardMaterial({
+      color:0x49342b
+    });
+
+  const ear1=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        .45,14,10
+      ),
+      earMat
+    );
+
+  ear1.scale.set(
+    .25,.6,.8
+  );
+
+  ear1.position.set(
+    1.35,
+    3.05,
+    -.72
+  );
+
+  ear1.rotation.z=-.4;
+
+  g.add(ear1);
+
+  const ear2=ear1.clone();
+
+  ear2.position.z=.72;
+
+  ear2.rotation.z=.4;
+
+  g.add(ear2);
+
+  /* Legs */
+
+  const legs=[];
+
+  for(const zPos of [-.65,.65]){
+
+    for(const xPos of [-.75,.75]){
+
+      const leg=
+        new THREE.Mesh(
+          new THREE.CylinderGeometry(
+            .18,.22,.95,12
+          ),
+          mats.darkSkin
+        );
+
+      leg.position.set(
+        xPos,
+        .9,
+        zPos
+      );
+
+      leg.castShadow=true;
+
+      g.add(leg);
+
+      legs.push(leg);
+    }
   }
-);
 
+  g.userData.legs=legs;
 
-/* CASTLE DOOR */
+  /* Tail */
 
-const door =
-  new THREE.Mesh(
-    new THREE.BoxGeometry(
-      4,
-      5,
-      1
-    ),
-    mat(0x6cb7dd)
+  const tail=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        .45,14,10
+      ),
+      mats.wool
+    );
+
+  tail.position.set(
+    -1.75,
+    2.5,
+    0
   );
 
-
-door.position.set(
-  0,
-  2.5,
-  -3
-);
-
-
-castle.add(
-  door
-);
-
-
-/* HEART */
-
-const heartShape =
-  new THREE.Shape();
-
-heartShape.moveTo(
-  0,
-  -.8
-);
-
-heartShape.bezierCurveTo(
-  -1.4,
-  -1.9,
-  -2.4,
-  .2,
-  0,
-  1.3
-);
-
-heartShape.bezierCurveTo(
-  2.4,
-  .2,
-  1.4,
-  -1.9,
-  0,
-  -.8
-);
-
-
-const heart =
-  new THREE.Mesh(
-    new THREE.ShapeGeometry(
-      heartShape
-    ),
-    mat(0xff7894)
+  tail.scale.set(
+    .5,.7,.5
   );
 
+  g.add(tail);
 
-heart.rotation.x =
-  -Math.PI/2;
+  g.scale.setScalar(scale);
 
+  g.position.set(
+    x,
+    0,
+    z
+  );
 
-heart.position.set(
-  0,
-  8,
-  -3.1
-);
+  scene.add(g);
 
+  return g;
+}
 
-heart.scale.setScalar(
-  1.1
-);
+/* Player */
 
+const player =
+  createSheep(
+    0,
+    10,
+    1.18
+  );
 
-castle.add(
-  heart
-);
+player.userData.sad=false;
+player.userData.happy=true;
 
+/* =========================================================
+   NPC DATA
+========================================================= */
+
+const levels=[
+
+  {
+    title:"The Hurtful Comment",
+    mission:"Find Milly and help her deal with a hurtful comment.",
+    npc:"Milly",
+    x:-17,
+    z:-10,
+    problem:
+      "Someone posted a really hurtful comment about my wool. It made me feel awful.",
+    answers:[
+      {
+        text:"Tell Milly she should reply with an even meaner comment.",
+        good:false,
+        feedback:
+          "A mean reply can make the situation worse. It is safer to pause and get support."
+      },
+      {
+        text:"Support Milly, save the evidence and suggest reporting the comment.",
+        good:true,
+        feedback:
+          "Great choice. Save evidence, report harmful content and talk to a trusted person."
+      },
+      {
+        text:"Tell everyone else to ignore the problem completely.",
+        good:false,
+        feedback:
+          "Ignoring harmful behaviour is not always enough. Reporting and getting support can help."
+      }
+    ]
+  },
+
+  {
+    title:"The Group Chat",
+    mission:"Find Pip and help with nasty group-chat messages.",
+    npc:"Pip",
+    x:22,
+    z:-10,
+    problem:
+      "A group chat keeps sending me nasty messages. I don't know what to do.",
+    answers:[
+      {
+        text:"Stay in the chat and argue with everyone.",
+        good:false,
+        feedback:
+          "Arguments can escalate the situation."
+      },
+      {
+        text:"Block the people sending abuse, keep evidence and tell a trusted person.",
+        good:true,
+        feedback:
+          "Good decision. Blocking, saving evidence and getting support are useful steps."
+      },
+      {
+        text:"Send their private messages to everyone else.",
+        good:false,
+        feedback:
+          "Sharing private messages can create another problem."
+      }
+    ]
+  },
+
+  {
+    title:"The Shared Picture",
+    mission:"Find Cloud and help after a picture was shared without permission.",
+    npc:"Cloud",
+    x:-24,
+    z:25,
+    problem:
+      "Someone shared a picture of me without asking. I feel embarrassed.",
+    answers:[
+      {
+        text:"Share the picture again so everyone sees it.",
+        good:false,
+        feedback:
+          "Sharing it further spreads the problem."
+      },
+      {
+        text:"Ask for the picture to be removed, report it if needed and get help.",
+        good:true,
+        feedback:
+          "Excellent. Asking for removal, reporting and getting help can protect Cloud."
+      },
+      {
+        text:"Tell Cloud it doesn't matter and walk away.",
+        good:false,
+        feedback:
+          "Cloud deserves support. Listening and helping can make a real difference."
+      }
+    ]
+  },
+
+  {
+    title:"Left Out",
+    mission:"Find Daisy and help someone who is being deliberately excluded.",
+    npc:"Daisy",
+    x:28,
+    z:23,
+    problem:
+      "I saw another sheep being deliberately left out of an online group.",
+    answers:[
+      {
+        text:"Laugh along so you don't become the target.",
+        good:false,
+        feedback:
+          "Joining in can make the excluded sheep feel even worse."
+      },
+      {
+        text:"Include them, check how they are feeling and tell a trusted person if needed.",
+        good:true,
+        feedback:
+          "Wonderful. Inclusion and support can help someone feel safe and welcome."
+      },
+      {
+        text:"Make another group just to talk about them.",
+        good:false,
+        feedback:
+          "That would continue the exclusion."
+      }
+    ]
+  },
+
+  {
+    title:"The Angry Reply",
+    mission:"Find Baailey and stop a situation from escalating.",
+    npc:"Baailey",
+    x:0,
+    z:-38,
+    problem:
+      "My friend wants to send a really mean reply back to someone who upset them.",
+    answers:[
+      {
+        text:"Tell them to send it immediately.",
+        good:false,
+        feedback:
+          "Sending something while angry can make things worse."
+      },
+      {
+        text:"Suggest taking a pause, not sending the mean reply and getting support.",
+        good:true,
+        feedback:
+          "Great. Taking a pause can prevent an angry response from escalating the situation."
+      },
+      {
+        text:"Help write an even harsher message.",
+        good:false,
+        feedback:
+          "Adding more hurtful words increases the conflict."
+      }
+    ]
+  },
+
+  {
+    title:"The Fake Account",
+    mission:"Help Ruby after someone created an account pretending to be her.",
+    npc:"Ruby",
+    x:-38,
+    z:-35,
+    problem:
+      "Someone made an account pretending to be me. People think it is really mine.",
+    answers:[
+      {
+        text:"Pretend to be them back.",
+        good:false,
+        feedback:
+          "Making another fake account can create more confusion."
+      },
+      {
+        text:"Tell a trusted adult, report the fake account and keep screenshots.",
+        good:true,
+        feedback:
+          "Correct. Evidence and reporting can help deal with impersonation."
+      },
+      {
+        text:"Give the account your password to prove who you are.",
+        good:false,
+        feedback:
+          "Never give your password to prove your identity."
+      }
+    ]
+  },
+
+  {
+    title:"The Secret Password",
+    mission:"Find Sunny and help them keep an account secure.",
+    npc:"Sunny",
+    x:38,
+    z:-37,
+    problem:
+      "Someone online says they need my password so they can help fix my account.",
+    answers:[
+      {
+        text:"Give them the password quickly.",
+        good:false,
+        feedback:
+          "Passwords should stay private."
+      },
+      {
+        text:"Do not share the password and ask a trusted person or official support for help.",
+        good:true,
+        feedback:
+          "Exactly. Keep passwords private and use official support channels."
+      },
+      {
+        text:"Post the password publicly so everyone can help.",
+        good:false,
+        feedback:
+          "Passwords should never be posted publicly."
+      }
+    ]
+  },
+
+  {
+    title:"The Rumour",
+    mission:"Find Poppy and help stop an online rumour.",
+    npc:"Poppy",
+    x:40,
+    z:30,
+    problem:
+      "A rumour about me is spreading online and people keep reposting it.",
+    answers:[
+      {
+        text:"Repost it to see how far it goes.",
+        good:false,
+        feedback:
+          "Reposting spreads the rumour further."
+      },
+      {
+        text:"Don't spread it, report harmful posts and support Poppy.",
+        good:true,
+        feedback:
+          "Good choice. Don't amplify rumours and make sure Poppy has support."
+      },
+      {
+        text:"Invent another rumour about the person who started it.",
+        good:false,
+        feedback:
+          "Creating another rumour would continue the cycle."
+      }
+    ]
+  }
+];
+
+/* =========================================================
+   NPC CREATION
+========================================================= */
+
+const npcs=[];
+
+levels.forEach((data,index)=>{
+
+  const npc=
+    createSheep(
+      data.x,
+      data.z,
+      1.03
+    );
+
+  npc.userData.npc=true;
+  npc.userData.level=index;
+  npc.userData.name=data.npc;
+  npc.userData.happy=false;
+  npc.userData.sad=true;
+
+  npcs.push(npc);
+
+});
+
+/* =========================================================
+   FLOATING NAME LABELS
+========================================================= */
+
+const labels=[];
+
+function makeLabel(text){
+
+  const canvas=
+    document.createElement("canvas");
+
+  canvas.width=512;
+  canvas.height=128;
+
+  const ctx=canvas.getContext("2d");
+
+  ctx.clearRect(
+    0,0,512,128
+  );
+
+  ctx.fillStyle="#ffffff";
+  ctx.strokeStyle="#111111";
+  ctx.lineWidth=8;
+
+  ctx.roundRect(
+    15,15,482,98,25
+  );
+
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle="#111111";
+  ctx.font="bold 48px Arial";
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+
+  ctx.fillText(
+    text,
+    256,
+    64
+  );
+
+  const texture=
+    new THREE.CanvasTexture(canvas);
+
+  const material=
+    new THREE.SpriteMaterial({
+      map:texture,
+      transparent:true
+    });
+
+  const sprite=
+    new THREE.Sprite(material);
+
+  sprite.scale.set(
+    4.5,
+    1.12,
+    1
+  );
+
+  return sprite;
+}
+
+npcs.forEach((npc,i)=>{
+
+  const label=
+    makeLabel(
+      levels[i].npc
+    );
+
+  label.position.y=5.3;
+
+  npc.add(label);
+
+  labels.push(label);
+
+});
 
 /* =========================================================
    GAME STATE
 ========================================================= */
 
-const keys={};
+let gameStarted=false;
 
-let yaw=0;
-let pitch=-.18;
+let currentLevel=0;
 
-let kindness=0;
 let stars=0;
 
-let currentQuest=0;
+let kindness=0;
 
-let nearbyFriend=null;
+let selectedAnswer=null;
 
-let mouseDragging=false;
+let nearbyNPC=null;
 
-let previousX=0;
-let previousY=0;
+let dialogueOpen=false;
 
+let jumpVelocity=0;
 
-/* =========================================================
-   QUEST DATA
-========================================================= */
+let onGround=true;
 
-const quests=[
+let yaw=0;
 
-  {
-    title:"Find Milly",
-    text:
-      "Milly has received a hurtful comment. Walk over and listen to her."
-  },
+let pitch=.18;
 
-  {
-    title:"Help Pip",
-    text:
-      "Pip is receiving repeated nasty messages in a group chat."
-  },
+let keys={};
 
-  {
-    title:"Help Cloud",
-    text:
-      "Cloud's picture was shared without permission."
-  },
+let joystick={
+  x:0,
+  y:0
+};
 
-  {
-    title:"Help Daisy",
-    text:
-      "Daisy saw another sheep being deliberately excluded."
-  },
-
-  {
-    title:"Help Baailey",
-    text:
-      "Baailey wants to send an angry message back."
-  }
-
-];
-
+const completed=
+  new Array(levels.length).fill(false);
 
 /* =========================================================
-   HUD UPDATE
+   UI
 ========================================================= */
+
+const loadBar=
+  document.getElementById("loadBar");
+
+let load=0;
+
+const loadTimer=
+  setInterval(()=>{
+
+    load+=8;
+
+    loadBar.style.width=
+      Math.min(load,100)+"%";
+
+    if(load>=100){
+
+      clearInterval(loadTimer);
+
+      setTimeout(()=>{
+
+        document.getElementById(
+          "loading"
+        ).style.opacity="0";
+
+        setTimeout(()=>{
+
+          document.getElementById(
+            "loading"
+          ).remove();
+
+        },500);
+
+      },200);
+
+    }
+
+  },60);
 
 function updateHUD(){
 
   document.getElementById(
-    "kindness"
+    "levelText"
   ).textContent=
-    kindness;
-
+    `Level ${currentLevel+1} / ${levels.length}`;
 
   document.getElementById(
     "stars"
   ).textContent=
-    stars;
-
-
-  document.getElementById(
-    "questNumber"
-  ).textContent=
-    `${Math.min(
-      currentQuest+1,
-      quests.length
-    )}/5`;
-
-}
-
-
-/* =========================================================
-   QUEST PANEL
-========================================================= */
-
-function updateQuest(){
-
-  if(
-    currentQuest>=quests.length
-  ){
-
-    document.getElementById(
-      "questTitle"
-    ).textContent=
-      "Kindness Kingdom complete!";
-
-
-    document.getElementById(
-      "questText"
-    ).textContent=
-      "You helped every sheep friend. Explore the kingdom and keep spreading kindness.";
-
-
-    document.getElementById(
-      "questButton"
-    ).textContent=
-      "Explore";
-
-
-    return;
-
-  }
-
+    `Stars: ${stars}`;
 
   document.getElementById(
-    "questTitle"
-  ).textContent=
-    quests[currentQuest].title;
-
+    "kindnessFill"
+  ).style.width=
+    Math.min(
+      100,
+      kindness
+    )+"%";
 
   document.getElementById(
     "questText"
   ).textContent=
-    quests[currentQuest].text;
-
+    levels[currentLevel].mission;
 }
 
+function openDialogue(npc){
 
-document.getElementById(
-  "questButton"
-).onclick=()=>{
+  if(!gameStarted) return;
 
-  document.getElementById(
-    "quest"
-  ).classList.add(
-    "hidden"
-  );
+  const data=
+    levels[npc.userData.level];
 
-};
+  if(npc.userData.level!==currentLevel){
 
-
-/* =========================================================
-   DIALOG
-========================================================= */
-
-function talkToFriend(
-  friend
-){
-
-  nearbyFriend=null;
-
-  document.getElementById(
-    "dialogSheep"
-  ).textContent=
-    friend.icon;
-
-
-  document.getElementById(
-    "dialogName"
-  ).textContent=
-    friend.name;
-
-
-  document.getElementById(
-    "dialogText"
-  ).textContent=
-    friend.problem;
-
-
-  const choices =
-    document.getElementById(
-      "choices"
+    showTemporary(
+      npc.userData.happy
+      ? `${data.npc} has already been helped.`
+      : `Complete the current level first.`
     );
 
+    return;
+  }
 
-  choices.innerHTML="";
+  nearbyNPC=npc;
+  dialogueOpen=true;
+  selectedAnswer=null;
 
+  document.getElementById(
+    "dialogue"
+  ).style.display="block";
 
-  const answers=[
+  document.getElementById(
+    "npcName"
+  ).textContent=data.npc;
 
-    {
-      text:
-        "Listen, keep evidence, block/report the behaviour, and tell a trusted adult.",
-      good:true
-    },
+  document.getElementById(
+    "npcProblem"
+  ).textContent=data.problem;
 
-    {
-      text:
-        "Send an even nastier message back.",
-      good:false
-    },
+  document.getElementById(
+    "npcFace"
+  ).textContent=
+    data.npc.charAt(0);
 
-    {
-      text:
-        "Share the message with lots of people.",
-      good:false
-    },
+  const answers=
+    document.getElementById(
+      "answers"
+    );
 
-    {
-      text:
-        "Pretend nothing happened.",
-      good:false
-    }
+  answers.innerHTML="";
 
-  ];
+  data.answers.forEach(
+    (answer,index)=>{
 
+      const button=
+        document.createElement("button");
 
-  answers.forEach(
-    answer=>{
-
-      const button =
-        document.createElement(
-          "button"
-        );
-
-
-      button.className=
-        "choice";
-
+      button.className="answer";
 
       button.textContent=
         answer.text;
 
-
       button.onclick=()=>{
 
-        if(
-          answer.good
-        ){
-
-          kindness+=20;
-          stars++;
-
-
-          if(
-            friend.mesh
-          ){
-
-            friend.mesh.visible=
-              false;
-
-          }
-
-
-          currentQuest=
-            Math.min(
-              currentQuest+1,
-              quests.length
-            );
-
-
-          document.getElementById(
-            "dialogOverlay"
-          ).classList.add(
-            "hidden"
+        document
+          .querySelectorAll(".answer")
+          .forEach(
+            b=>b.classList.remove("selected")
           );
 
+        button.classList.add("selected");
 
-          updateHUD();
-          updateQuest();
+        selectedAnswer=index;
 
-
-          if(
-            currentQuest<
-            quests.length
-          ){
-
-            document.getElementById(
-              "quest"
-            ).classList.remove(
-              "hidden"
-            );
-
-          }
-
-        }
-        else{
-
-          document.getElementById(
-            "dialogText"
-          ).textContent=
-            "That response could make the situation worse. Try a choice that focuses on safety and getting support.";
-
-        }
+        document.getElementById(
+          "send"
+        ).disabled=false;
 
       };
 
-
-      choices.appendChild(
-        button
-      );
+      answers.appendChild(button);
 
     }
   );
 
+  document.getElementById(
+    "send"
+  ).style.display="block";
 
   document.getElementById(
-    "dialogOverlay"
-  ).classList.remove(
-    "hidden"
-  );
+    "send"
+  ).disabled=true;
+
+  document.getElementById(
+    "feedback"
+  ).style.display="none";
+
+  document.getElementById(
+    "nextBtn"
+  ).style.display="none";
+
+  sound(520,.08,"sine",.04);
+}
+
+function submitAnswer(){
+
+  if(
+    selectedAnswer===null ||
+    !nearbyNPC
+  ) return;
+
+  const data=
+    levels[nearbyNPC.userData.level];
+
+  const answer=
+    data.answers[selectedAnswer];
+
+  const feedback=
+    document.getElementById(
+      "feedback"
+    );
+
+  feedback.textContent=
+    answer.feedback;
+
+  feedback.style.display="block";
+
+  if(answer.good){
+
+    feedback.className="good";
+
+    kindness=
+      Math.min(
+        100,
+        kindness+20
+      );
+
+    stars++;
+
+    completed[currentLevel]=true;
+
+    nearbyNPC.userData.happy=true;
+    nearbyNPC.userData.sad=false;
+
+    makeHappy(nearbyNPC);
+
+    successSound();
+
+    document.getElementById(
+      "send"
+    ).style.display="none";
+
+    document.getElementById(
+      "nextBtn"
+    ).style.display="block";
+
+    document.getElementById(
+      "nextBtn"
+    ).textContent=
+      currentLevel<
+      levels.length-1
+      ? "CONTINUE TO NEXT LEVEL"
+      : "FINISH ADVENTURE";
+
+    updateHUD();
+
+  }else{
+
+    feedback.className="bad";
+
+    badSound();
+
+  }
 
 }
 
-
 /* =========================================================
-   CLOSE DIALOG
+   SAD / HAPPY ANIMATION
 ========================================================= */
 
-document.getElementById(
-  "closeDialog"
-).onclick=()=>{
+function makeHappy(npc){
 
-  document.getElementById(
-    "dialogOverlay"
-  ).classList.add(
-    "hidden"
+  npc.userData.happy=true;
+  npc.userData.sad=false;
+
+  npc.userData.head.rotation.z=0;
+
+  npc.userData.legs.forEach(
+    leg=>{
+      leg.rotation.z=0;
+    }
   );
 
-};
+  /* Make label brighter */
 
+  const label=
+    npc.children.find(
+      child=>child.type==="Sprite"
+    );
+
+  if(label){
+    label.material.opacity=1;
+  }
+
+}
+
+function animateSheep(
+  sheep,
+  time
+){
+
+  const ud=sheep.userData;
+
+  if(
+    ud.npc &&
+    ud.sad
+  ){
+
+    /* sad head */
+
+    ud.head.rotation.z=
+      -.15+
+      Math.sin(time*2)*.025;
+
+    ud.head.rotation.x=.15;
+
+    /* droopy ears */
+
+    sheep.children.forEach(
+      child=>{
+        if(
+          child.geometry &&
+          child.geometry.type==="SphereGeometry"
+        ){
+          /* intentionally subtle */
+        }
+      }
+    );
+
+    /* slow breathing */
+
+    sheep.scale.y=
+      sheep.scale.x*
+      (1+
+      Math.sin(time*2)*.015);
+
+  }else if(
+    ud.npc &&
+    ud.happy
+  ){
+
+    ud.head.rotation.z=
+      Math.sin(time*5)*.08;
+
+    ud.head.rotation.x=
+      Math.sin(time*4)*.04;
+
+    sheep.position.y=
+      Math.abs(
+        Math.sin(time*4)
+      )*.12;
+
+  }
+
+}
 
 /* =========================================================
-   HELP
+   MOVEMENT
 ========================================================= */
 
-document.getElementById(
-  "helpButton"
-).onclick=()=>{
+function jump(){
 
-  document.getElementById(
-    "helpOverlay"
-  ).classList.remove(
-    "hidden"
+  if(!gameStarted) return;
+
+  if(onGround){
+
+    jumpVelocity=10;
+
+    onGround=false;
+
+    jumpSound();
+  }
+}
+
+function canMoveTo(
+  x,z
+){
+
+  if(
+    x<-83 ||
+    x>83 ||
+    z<-83 ||
+    z>83
+  ){
+    return false;
+  }
+
+  for(const o of obstacles){
+
+    const dx=x-o.x;
+    const dz=z-o.z;
+
+    if(
+      dx*dx+
+      dz*dz<
+      (o.radius+1.3)*
+      (o.radius+1.3)
+    ){
+      return false;
+    }
+
+  }
+
+  return true;
+}
+
+function updateMovement(dt){
+
+  if(!gameStarted) return;
+
+  if(dialogueOpen) return;
+
+  let forward=0;
+  let strafe=0;
+
+  if(
+    keys["w"] ||
+    keys["arrowup"]
+  ) forward+=1;
+
+  if(
+    keys["s"] ||
+    keys["arrowdown"]
+  ) forward-=1;
+
+  if(
+    keys["a"] ||
+    keys["arrowleft"]
+  ) strafe-=1;
+
+  if(
+    keys["d"] ||
+    keys["arrowright"]
+  ) strafe+=1;
+
+  forward+=-joystick.y;
+  strafe+=joystick.x;
+
+  const length=
+    Math.hypot(
+      forward,
+      strafe
+    );
+
+  if(length>1){
+
+    forward/=length;
+    strafe/=length;
+
+  }
+
+  const speed=9;
+
+  const dx=
+    (
+      Math.sin(yaw)*forward+
+      Math.cos(yaw)*strafe
+    )*
+    speed*
+    dt;
+
+  const dz=
+    (
+      Math.cos(yaw)*forward-
+      Math.sin(yaw)*strafe
+    )*
+    speed*
+    dt;
+
+  const nx=
+    player.position.x+dx;
+
+  const nz=
+    player.position.z+dz;
+
+  if(
+    canMoveTo(
+      nx,
+      player.position.z
+    )
+  ){
+    player.position.x=nx;
+  }
+
+  if(
+    canMoveTo(
+      player.position.x,
+      nz
+    )
+  ){
+    player.position.z=nz;
+  }
+
+  const moving=
+    length>.05;
+
+  if(moving){
+
+    player.rotation.y=
+      Math.atan2(
+        dx,
+        dz
+      );
+
+    player.userData.legs.forEach(
+      (leg,i)=>{
+
+        leg.rotation.z=
+          Math.sin(
+            performance.now()*.012+
+            i*Math.PI
+          )*.25;
+
+      }
+    );
+
+  }else{
+
+    player.userData.legs.forEach(
+      leg=>{
+        leg.rotation.z=0;
+      }
+    );
+
+  }
+
+  /* Gravity */
+
+  if(!onGround){
+
+    jumpVelocity-=25*dt;
+
+    player.position.y+=
+      jumpVelocity*dt;
+
+    if(
+      player.position.y<=0
+    ){
+
+      player.position.y=0;
+
+      jumpVelocity=0;
+
+      onGround=true;
+
+    }
+
+  }
+
+}
+
+/* =========================================================
+   CAMERA
+========================================================= */
+
+function updateCamera(){
+
+  const distance=11;
+
+  const target=
+    new THREE.Vector3(
+      player.position.x,
+      player.position.y+2.7,
+      player.position.z
+    );
+
+  const offset=
+    new THREE.Vector3(
+      Math.sin(yaw)*distance,
+      5.3+pitch*3,
+      Math.cos(yaw)*distance
+    );
+
+  const desired=
+    target.clone().add(offset);
+
+  camera.position.lerp(
+    desired,
+    .09
   );
 
-};
+  camera.lookAt(target);
 
+}
 
-document.getElementById(
-  "closeHelp"
-).onclick=()=>{
+/* =========================================================
+   INTERACTION
+========================================================= */
 
-  document.getElementById(
-    "helpOverlay"
-  ).classList.add(
-    "hidden"
-  );
+function findNearby(){
 
-};
+  let nearest=null;
+  let nearestDistance=Infinity;
 
+  npcs.forEach(npc=>{
 
-document.getElementById(
-  "resumeButton"
-).onclick=()=>{
+    const d=
+      player.position.distanceTo(
+        npc.position
+      );
 
-  document.getElementById(
-    "helpOverlay"
-  ).classList.add(
-    "hidden"
-  );
+    if(
+      d<5.5 &&
+      d<nearestDistance
+    ){
 
-};
+      nearest=npc;
+      nearestDistance=d;
 
+    }
+
+  });
+
+  return nearest;
+}
+
+function interact(){
+
+  if(dialogueOpen) return;
+
+  const npc=findNearby();
+
+  if(npc){
+
+    openDialogue(npc);
+
+  }else{
+
+    showTemporary(
+      "Move closer to a sheep to talk."
+    );
+
+  }
+
+}
+
+let tempTimer=null;
+
+function showTemporary(text){
+
+  const prompt=
+    document.getElementById(
+      "prompt"
+    );
+
+  prompt.textContent=text;
+  prompt.style.display="block";
+
+  clearTimeout(tempTimer);
+
+  tempTimer=
+    setTimeout(
+      ()=>{
+        if(!dialogueOpen)
+          prompt.style.display="none";
+      },
+      1800
+    );
+
+}
 
 /* =========================================================
    KEYBOARD
 ========================================================= */
 
-addEventListener(
+window.addEventListener(
   "keydown",
-  event=>{
+  e=>{
 
-    keys[
-      event.key.toLowerCase()
-    ]=true;
-
+    keys[e.key.toLowerCase()]=true;
 
     if(
-      event.key.toLowerCase()==="e"
+      e.code==="Space"
     ){
 
-      if(
-        nearbyFriend
-      ){
+      e.preventDefault();
 
-        talkToFriend(
-          nearbyFriend
-        );
+      jump();
 
-      }
+    }
+
+    if(
+      e.key.toLowerCase()==="e"
+    ){
+
+      interact();
 
     }
 
   }
 );
 
-
-addEventListener(
+window.addEventListener(
   "keyup",
-  event=>{
+  e=>{
 
-    keys[
-      event.key.toLowerCase()
-    ]=false;
+    keys[e.key.toLowerCase()]=false;
 
   }
 );
-
 
 /* =========================================================
    MOUSE LOOK
 ========================================================= */
 
-renderer.domElement.addEventListener(
+let dragging=false;
+let lastX=0;
+let lastY=0;
+
+renderer.addEventListener(
   "pointerdown",
-  event=>{
-
-    mouseDragging=true;
-
-    previousX=
-      event.clientX;
-
-    previousY=
-      event.clientY;
-
-  }
-);
-
-
-renderer.domElement.addEventListener(
-  "pointerup",
-  ()=>{
-
-    mouseDragging=false;
-
-  }
-);
-
-
-renderer.domElement.addEventListener(
-  "pointermove",
-  event=>{
+  e=>{
 
     if(
-      !mouseDragging
+      e.pointerType==="mouse"
     ){
 
-      return;
+      dragging=true;
+
+      lastX=e.clientX;
+      lastY=e.clientY;
 
     }
 
+  }
+);
 
-    const dx=
-      event.clientX-
-      previousX;
+window.addEventListener(
+  "pointerup",
+  ()=>{
+    dragging=false;
+  }
+);
 
+window.addEventListener(
+  "pointermove",
+  e=>{
 
-    const dy=
-      event.clientY-
-      previousY;
+    if(!dragging) return;
 
+    const dx=e.clientX-lastX;
+    const dy=e.clientY-lastY;
 
-    previousX=
-      event.clientX;
+    lastX=e.clientX;
+    lastY=e.clientY;
 
-
-    previousY=
-      event.clientY;
-
-
-    yaw-=
-      dx*.004;
-
-
-    pitch-=
-      dy*.003;
-
+    yaw-=dx*.006;
 
     pitch=
-      THREE.MathUtils.clamp(
-        pitch,
-        -.8,
-        .55
+      Math.max(
+        -.4,
+        Math.min(
+          .8,
+          pitch-dy*.004
+        )
       );
 
   }
 );
-
 
 /* =========================================================
    MOBILE JOYSTICK
 ========================================================= */
 
-const joystick =
+const joystickElement=
   document.getElementById(
     "joystick"
   );
 
-
-const stick =
+const stick=
   document.getElementById(
     "stick"
   );
 
+let joystickActive=false;
 
-const mobile={
-  x:0,
-  y:0
-};
+joystickElement.addEventListener(
+  "pointerdown",
+  e=>{
 
+    joystickActive=true;
 
-function moveJoystick(
-  event
-){
-
-  const rect=
-    joystick.getBoundingClientRect();
-
-
-  const centerX=
-    rect.left+
-    rect.width/2;
-
-
-  const centerY=
-    rect.top+
-    rect.height/2;
-
-
-  let dx=
-    event.clientX-
-    centerX;
-
-
-  let dy=
-    event.clientY-
-    centerY;
-
-
-  const distance=
-    Math.hypot(
-      dx,
-      dy
+    joystickElement.setPointerCapture(
+      e.pointerId
     );
 
+    updateJoystick(e);
 
-  const max=45;
+  }
+);
 
+joystickElement.addEventListener(
+  "pointermove",
+  e=>{
 
-  if(
-    distance>max
-  ){
+    if(
+      joystickActive
+    ){
+      updateJoystick(e);
+    }
 
-    dx=
-      dx/distance*max;
+  }
+);
 
-    dy=
-      dy/distance*max;
+joystickElement.addEventListener(
+  "pointerup",
+  resetJoystick
+);
+
+joystickElement.addEventListener(
+  "pointercancel",
+  resetJoystick
+);
+
+function updateJoystick(e){
+
+  const r=
+    joystickElement.getBoundingClientRect();
+
+  let x=
+    e.clientX-
+    (r.left+r.width/2);
+
+  let y=
+    e.clientY-
+    (r.top+r.height/2);
+
+  const max=55;
+
+  const len=
+    Math.hypot(x,y);
+
+  if(len>max){
+
+    x=x/len*max;
+    y=y/len*max;
 
   }
 
+  joystick.x=x/max;
+  joystick.y=y/max;
 
-  mobile.x=
-    dx/max;
+  stick.style.left=
+    `calc(50% + ${x}px)`;
 
-
-  mobile.y=
-    dy/max;
-
-
-  stick.style.transform=
-    `translate(${dx}px,${dy}px)`;
-
+  stick.style.top=
+    `calc(50% + ${y}px)`;
 }
 
-
-joystick.addEventListener(
-  "pointerdown",
-  event=>{
-
-    joystick.setPointerCapture(
-      event.pointerId
-    );
-
-    moveJoystick(
-      event
-    );
-
-  }
-);
-
-
-joystick.addEventListener(
-  "pointermove",
-  event=>{
-
-    moveJoystick(
-      event
-    );
-
-  }
-);
-
-
-joystick.addEventListener(
-  "pointerup",
-  ()=>{
-
-    mobile.x=0;
-    mobile.y=0;
-
-    stick.style.transform=
-      "translate(0,0)";
-
-  }
-);
-
-
-/* =========================================================
-   MOBILE CAMERA
-========================================================= */
-
-let touchLook=false;
-
-let touchX=0;
-let touchY=0;
-
-
-renderer.domElement.addEventListener(
-  "pointerdown",
-  event=>{
-
-    if(
-      event.clientX>
-      innerWidth*.45
-    ){
-
-      touchLook=true;
-
-      touchX=
-        event.clientX;
-
-      touchY=
-        event.clientY;
-
-    }
-
-  }
-);
-
-
-renderer.domElement.addEventListener(
-  "pointermove",
-  event=>{
-
-    if(
-      !touchLook
-    ){
-
-      return;
-
-    }
-
-
-    const dx=
-      event.clientX-
-      touchX;
-
-
-    const dy=
-      event.clientY-
-      touchY;
-
-
-    touchX=
-      event.clientX;
-
-
-    touchY=
-      event.clientY;
-
-
-    yaw-=
-      dx*.004;
-
-
-    pitch-=
-      dy*.003;
-
-
-    pitch=
-      THREE.MathUtils.clamp(
-        pitch,
-        -.8,
-        .55
-      );
-
-  }
-);
-
-
-renderer.domElement.addEventListener(
-  "pointerup",
-  ()=>{
-
-    touchLook=false;
-
-  }
-);
-
-
-/* =========================================================
-   FIND NEAREST FRIEND
-========================================================= */
-
-function checkNearby(){
-
-  let nearest=null;
-  let distance=Infinity;
-
-
-  friends.forEach(
-    friend=>{
-
-      if(
-        !friend.mesh.visible
-      ){
-
-        return;
-
-      }
-
-
-      const d=
-        player.position.distanceTo(
-          friend.mesh.position
-        );
-
-
-      if(
-        d<distance
-      ){
-
-        distance=d;
-        nearest=friend;
-
-      }
-
+function resetJoystick(){
+
+  joystickActive=false;
+
+  joystick.x=0;
+  joystick.y=0;
+
+  stick.style.left="50%";
+  stick.style.top="50%";
+}
+
+document
+  .getElementById("jumpBtn")
+  .addEventListener(
+    "pointerdown",
+    e=>{
+      e.preventDefault();
+      jump();
     }
   );
 
+document
+  .getElementById("talkBtn")
+  .addEventListener(
+    "pointerdown",
+    e=>{
+      e.preventDefault();
+      interact();
+    }
+  );
 
-  if(
-    nearest &&
-    distance<5
-  ){
+/* =========================================================
+   DIALOGUE BUTTONS
+========================================================= */
 
-    nearbyFriend=
-      nearest;
+document
+  .getElementById("send")
+  .onclick=
+    submitAnswer;
 
+document
+  .getElementById("nextBtn")
+  .onclick=
+    nextLevel;
 
-    document.getElementById(
-      "interactPrompt"
-    ).textContent=
-      `Talk to ${nearest.name} — press E or click`;
+/* =========================================================
+   NEXT LEVEL
+========================================================= */
 
+function nextLevel(){
 
-    document.getElementById(
-      "interactPrompt"
-    ).classList.remove(
-      "hidden"
-    );
+  document.getElementById(
+    "dialogue"
+  ).style.display="none";
 
-  }
-  else{
+  dialogueOpen=false;
 
-    nearbyFriend=null;
+  document.getElementById(
+    "levelComplete"
+  ).style.display="flex";
 
+  document.getElementById(
+    "completeTitle"
+  ).textContent=
+    `Level ${currentLevel+1} Complete!`;
 
-    document.getElementById(
-      "interactPrompt"
-    ).classList.add(
-      "hidden"
-    );
+  document.getElementById(
+    "completeStars"
+  ).textContent=
+    "You earned a star!";
 
-  }
+  document.getElementById(
+    "completeText"
+  ).textContent=
+    levels[currentLevel].title+
+    " has been completed. Keep exploring and helping the other sheep.";
 
 }
 
+document
+  .getElementById(
+    "continueLevel"
+  )
+  .onclick=()=>{
 
-/* =========================================================
-   CLICK TO TALK
-========================================================= */
+    document.getElementById(
+      "levelComplete"
+    ).style.display="none";
 
-renderer.domElement.addEventListener(
-  "click",
-  event=>{
+    currentLevel++;
 
     if(
-      nearbyFriend
+      currentLevel>=levels.length
     ){
 
-      talkToFriend(
-        nearbyFriend
-      );
+      finishGame();
 
+      return;
     }
 
-  }
-);
+    updateHUD();
 
+    player.position.set(
+      0,
+      0,
+      10
+    );
+
+    yaw=0;
+
+    successSound();
+
+  };
 
 /* =========================================================
-   GAME LOOP
+   FINISH GAME
 ========================================================= */
 
-let previousTime=
-  performance.now();
+function finishGame(){
 
+  gameStarted=false;
 
-function animate(
-  currentTime
-){
+  document.getElementById(
+    "levelComplete"
+  ).style.display="none";
+
+  document.getElementById(
+    "certificate"
+  ).style.display="flex";
+
+  document.getElementById(
+    "certLevels"
+  ).textContent=
+    levels.length;
+
+  document.getElementById(
+    "certStars"
+  ).textContent=
+    stars;
+
+  document.getElementById(
+    "certPoints"
+  ).textContent=
+    kindness;
+
+  successSound();
+
+}
+
+/* =========================================================
+   START / RESTART
+========================================================= */
+
+document
+  .getElementById(
+    "startBtn"
+  )
+  .onclick=()=>{
+
+    startAudio();
+
+    document.getElementById(
+      "startScreen"
+    ).style.display="none";
+
+    gameStarted=true;
+
+    updateHUD();
+
+    sound(440,.12,"sine",.05);
+    setTimeout(
+      ()=>sound(660,.15,"sine",.05),
+      100
+    );
+
+  };
+
+document
+  .getElementById(
+    "restartBtn"
+  )
+  .onclick=()=>{
+
+    location.reload();
+
+  };
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+const clock=
+  new THREE.Clock();
+
+function animate(){
 
   requestAnimationFrame(
     animate
   );
 
-
-  const delta=
+  const dt=
     Math.min(
-      .04,
-      (currentTime-
-      previousTime)/1000
+      clock.getDelta(),
+      .05
     );
 
+  const time=
+    performance.now()/1000;
 
-  previousTime=
-    currentTime;
+  /* Clouds */
 
+  clouds.forEach(
+    (cloud,i)=>{
 
-  /* MOVEMENT */
-
-  let forwardInput=0;
-  let sideInput=0;
-
-
-  if(
-    keys.w ||
-    keys.arrowup
-  ){
-
-    forwardInput-=1;
-
-  }
-
-
-  if(
-    keys.s ||
-    keys.arrowdown
-  ){
-
-    forwardInput+=1;
-
-  }
-
-
-  if(
-    keys.a ||
-    keys.arrowleft
-  ){
-
-    sideInput-=1;
-
-  }
-
-
-  if(
-    keys.d ||
-    keys.arrowright
-  ){
-
-    sideInput+=1;
-
-  }
-
-
-  forwardInput+=
-    mobile.y;
-
-
-  sideInput+=
-    mobile.x;
-
-
-  const inputLength=
-    Math.hypot(
-      forwardInput,
-      sideInput
-    );
-
-
-  if(
-    inputLength>1
-  ){
-
-    forwardInput/=
-      inputLength;
-
-    sideInput/=
-      inputLength;
-
-  }
-
-
-  /* DIRECTION */
-
-  const forward=
-    new THREE.Vector3(
-      Math.sin(yaw),
-      0,
-      Math.cos(yaw)
-    );
-
-
-  const right=
-    new THREE.Vector3(
-      Math.cos(yaw),
-      0,
-      -Math.sin(yaw)
-    );
-
-
-  const speed=
-    8;
-
-
-  player.position.addScaledVector(
-    forward,
-    forwardInput*
-    speed*
-    delta
-  );
-
-
-  player.position.addScaledVector(
-    right,
-    sideInput*
-    speed*
-    delta
-  );
-
-
-  /* BOUNDARY */
-
-  player.position.x=
-    THREE.MathUtils.clamp(
-      player.position.x,
-      -80,
-      80
-    );
-
-
-  player.position.z=
-    THREE.MathUtils.clamp(
-      player.position.z,
-      -80,
-      80
-    );
-
-
-  /* SHEEP ROTATION */
-
-  if(
-    inputLength>.05
-  ){
-
-    player.rotation.y=
-      yaw+
-      Math.PI;
-
-  }
-
-
-  /* CUDDLY BOUNCE */
-
-  player.position.y=
-    Math.sin(
-      currentTime*.006
-    )*.035;
-
-
-  /* CAMERA */
-
-  const target=
-    player.position.clone();
-
-
-  target.y+=2.5;
-
-
-  const desiredCamera=
-    player.position.clone();
-
-
-  desiredCamera.x+=
-    Math.sin(yaw)*7;
-
-
-  desiredCamera.y+=
-    4.3;
-
-
-  desiredCamera.z+=
-    Math.cos(yaw)*7;
-
-
-  camera.position.lerp(
-    desiredCamera,
-    .1
-  );
-
-
-  camera.lookAt(
-    target
-  );
-
-
-  /* NPC ANIMATION */
-
-  friends.forEach(
-    friend=>{
+      cloud.position.x+=
+        dt*(.7+i*.15);
 
       if(
-        !friend.mesh.visible
+        cloud.position.x>100
       ){
-
-        return;
-
+        cloud.position.x=-100;
       }
-
-
-      friend.mesh.position.y=
-        Math.sin(
-          currentTime*.002+
-          friend.x
-        )*.035;
-
-
-      friend.mesh.rotation.y=
-        Math.sin(
-          currentTime*.001+
-          friend.z
-        )*.06;
 
     }
   );
 
+  /* Player animation */
 
-  checkNearby();
+  if(gameStarted){
 
+    if(onGround){
 
-  /* CASTLE HEART ANIMATION */
+      player.position.y=
+        Math.sin(time*2.5)*.035;
 
-  heart.rotation.z=
-    Math.sin(
-      currentTime*.0015
-    )*.05;
+    }
 
+  }
 
-  heart.scale.setScalar(
-    1.05+
-    Math.sin(
-      currentTime*.003
-    )*.05
+  npcs.forEach(
+    npc=>{
+      animateSheep(
+        npc,
+        time
+      );
+    }
   );
 
+  updateMovement(dt);
+
+  updateCamera();
+
+  const nearest=
+    findNearby();
+
+  nearbyNPC=nearest;
+
+  const prompt=
+    document.getElementById(
+      "prompt"
+    );
+
+  if(
+    nearest &&
+    !dialogueOpen
+  ){
+
+    const data=
+      levels[
+        nearest.userData.level
+      ];
+
+    if(
+      nearest.userData.level===
+      currentLevel
+    ){
+
+      prompt.textContent=
+        `Press E to talk to ${data.npc}`;
+
+      prompt.style.display="block";
+
+    }else{
+
+      prompt.style.display="none";
+
+    }
+
+  }else if(!dialogueOpen){
+
+    prompt.style.display="none";
+
+  }
 
   renderer.render(
     scene,
     camera
   );
-
 }
 
+animate();
 
 /* =========================================================
    RESIZE
 ========================================================= */
 
-addEventListener(
+window.addEventListener(
   "resize",
   ()=>{
 
     camera.aspect=
-      innerWidth/
-      innerHeight;
-
+      innerWidth/innerHeight;
 
     camera.updateProjectionMatrix();
-
 
     renderer.setSize(
       innerWidth,
@@ -2975,71 +3091,182 @@ addEventListener(
   }
 );
 
-
 /* =========================================================
-   START
+   CLICK / TOUCH WORLD INTERACTION
 ========================================================= */
 
-setTimeout(
+renderer.addEventListener(
+  "dblclick",
   ()=>{
+    if(gameStarted){
+      interact();
+    }
+  }
+);
 
-    document.getElementById(
-      "loading"
-    ).classList.add(
-      "hidden"
+/* =========================================================
+   EXTRA COLLECTIBLE STARS
+========================================================= */
+
+const collectibles=[];
+
+for(let i=0;i<25;i++){
+
+  const star=
+    new THREE.Mesh(
+      new THREE.OctahedronGeometry(
+        .35
+      ),
+      mats.gold
     );
 
+  star.position.set(
+    -70+Math.random()*140,
+    1.3,
+    -70+Math.random()*140
+  );
 
-    document.getElementById(
-      "hud"
-    ).classList.remove(
-      "hidden"
-    );
+  star.castShadow=true;
 
+  scene.add(star);
 
-    document.getElementById(
-      "crosshair"
-    ).classList.remove(
-      "hidden"
-    );
+  collectibles.push(star);
 
+}
 
-    document.getElementById(
-      "quest"
-    ).classList.remove(
-      "hidden"
-    );
+function checkCollectibles(){
 
+  if(!gameStarted) return;
 
-    if(
-      "ontouchstart" in window
-    ){
+  collectibles.forEach(
+    star=>{
 
-      document.getElementById(
-        "mobileControls"
-      ).classList.remove(
-        "hidden"
-      );
+      if(
+        star.visible &&
+        player.position.distanceTo(
+          star.position
+        )<1.8
+      ){
+
+        star.visible=false;
+
+        kindness=
+          Math.min(
+            100,
+            kindness+3
+          );
+
+        collectSound();
+
+        updateHUD();
+
+      }
+
+      star.rotation.y+=.03;
+      star.position.y=
+        1.3+
+        Math.sin(
+          performance.now()*.003+
+          star.position.x
+        )*.2;
 
     }
+  );
+}
 
+/* Add collectible checking */
 
-    updateHUD();
-    updateQuest();
+const oldAnimate=animate;
 
-  },
-  2100
+/* =========================================================
+   SAVE PROGRESS
+========================================================= */
+
+function saveProgress(){
+
+  localStorage.setItem(
+    "sheepsafe-progress",
+    JSON.stringify({
+      level:currentLevel,
+      stars,
+      kindness,
+      completed
+    })
+  );
+
+}
+
+setInterval(
+  saveProgress,
+  3000
 );
 
+/* =========================================================
+   CERTIFICATE PLAYER NAME
+========================================================= */
 
-/* START GAME */
+const nameInput=
+  document.createElement("input");
 
-animate(
-  performance.now()
+nameInput.placeholder=
+  "Enter your name for the certificate";
+
+nameInput.style.cssText=`
+  width:100%;
+  max-width:500px;
+  padding:13px;
+  border:3px solid #111;
+  border-radius:12px;
+  font-size:17px;
+  font-weight:bold;
+  margin:10px 0;
+`;
+
+document
+  .querySelector(
+    ".certificatePaper"
+  )
+  .insertBefore(
+    nameInput,
+    document.getElementById(
+      "certificateName"
+    )
+  );
+
+nameInput.addEventListener(
+  "input",
+  ()=>{
+    document.getElementById(
+      "certificateName"
+    ).textContent=
+      nameInput.value ||
+      "SheepSafe Player";
+  }
 );
+
+/* =========================================================
+   PATCH ANIMATION FOR COLLECTIBLES
+========================================================= */
+
+const baseAnimate=
+  animate;
+
+function gameLoop(){
+
+  requestAnimationFrame(
+    gameLoop
+  );
+
+  checkCollectibles();
+
+}
+
+/* We already have the renderer loop.
+   Collectibles are updated separately. */
+
+gameLoop();
 
 </script>
 
 </body>
 </html>
-```
