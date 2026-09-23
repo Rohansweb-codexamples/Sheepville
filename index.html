@@ -304,14 +304,51 @@ canvas{display:block}
  <button id="next">NEXT LEVEL</button>
 
 </div>
+document.getElementById("send").addEventListener("click",()=>{
 
-<div id="levelComplete">
- <div class="modal">
-  <h1 id="completeHeading">Level Complete!</h1>
-  <h2 id="completeStars">Star earned</h2>
-  <p id="completeMessage"></p>
-  <button class="bigButton" id="continueButton">CONTINUE</button>
- </div>
+ if(selected<0||!nearby)return;
+
+ const data=levels[nearby.userData.level];
+ const answer=data.answers[selected];
+
+ const feedback=document.getElementById("feedback");
+
+ feedback.textContent=answer[2];
+ feedback.style.display="block";
+
+ if(answer[1]){
+
+   feedback.className="good";
+
+   points=Math.min(100,points+13);
+   stars++;
+
+   nearby.userData.sad=false;
+   nearby.userData.happy=true;
+
+   goodSound();
+
+   makeHappy(nearby);
+
+   document.getElementById("send").disabled=true;
+
+   document.getElementById("next").style.display="block";
+
+   updateUI();
+
+ }else{
+
+   feedback.className="bad";
+
+   badSound();
+
+   document.getElementById("next").style.display="none";
+
+   document.getElementById("send").disabled=false;
+
+ }
+});
+
 </div>
 
 <div id="certificate">
